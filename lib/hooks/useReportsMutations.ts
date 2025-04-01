@@ -4,6 +4,7 @@ import { toast } from 'sonner';
 import {
   createReport,
   updateReport,
+  resolveReport,
   type Report,
   type ReportStatus
 } from '@/lib/services/reports';
@@ -96,6 +97,39 @@ export const useUpdateReport = () => {
     onError: (error) => {
       console.error('Error updating report:', error);
       toast.error(error.message || 'Ocurrió un error inesperado al actualizar el reporte.');
+    },
+  });
+};
+
+// --- NUEVO HOOK para Marcar Reporte como Resuelto usando RPC ---
+
+interface ResolveReportVariables {
+  reportId: string;
+  userId: string; // Necesitamos el userId para pasarlo a la función RPC
+}
+
+export const useResolveReport = () => {
+  const queryClient = useQueryClient();
+  const { supabase } = useAuth();
+
+  return useMutation<void, Error, ResolveReportVariables>({
+    mutationFn: async ({ reportId, userId }) => {
+      if (!supabase) throw new Error('Supabase client is not available');
+      // Llamar al nuevo servicio que usa RPC
+      await resolveReport(supabase, reportId, userId);
+    },
+    onSuccess: (data, variables) => {
+      // data es void en este caso
+      toast.success('Reporte marcado como resuelto.');
+
+      // Invalidar queries para refrescar
+      queryClient.invalidateQueries({ queryKey: ['reports', 'detail', variables.reportId] });
+      queryClient.invalidateQueries({ queryKey: ['reports', 'list'] });
+    },
+    onError: (error) => {
+      console.error('Error resolving report via RPC:', error);
+      // El mensaje de error puede venir de la EXCEPTION en la función SQL
+      toast.error(error.message || 'Ocurrió un error inesperado al marcar como resuelto.');
     },
   });
 };

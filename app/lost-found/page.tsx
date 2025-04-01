@@ -2,11 +2,12 @@
 
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { useInfiniteQuery } from '@tanstack/react-query';
+import Link from 'next/link';
 
 import { useReports } from '@/lib/hooks/useReportsQueries'; // Asumiendo que tu hook se llama así
 import { ReportCard } from '@/components/ReportCard';
 import { Button } from '@/components/ui/button';
-import { Loader2, AlertTriangle } from 'lucide-react';
+import { Loader2, AlertTriangle, PlusCircle } from 'lucide-react';
 import { ReportMap } from '@/components/maps/ReportMap'; // Importar ReportMap
 import { ReportFilters, type ReportFiltersState } from '@/components/filters/ReportFilters'; // Importar filtros
 import { type ReportFilters as ReportFiltersType, type MapBounds } from '@/lib/services/reports'; // Importar MapBounds aquí también
@@ -136,11 +137,19 @@ export default function LostFoundPage() {
 
     return (
         <main className="container mx-auto px-4 py-8">
-            <h1 className="text-3xl font-bold mb-6">Mascotas Perdidas y Encontradas</h1>
-            <p className="mb-6 text-muted-foreground">
-                Explora los últimos reportes de mascotas perdidas, encontradas o en
-                situación de emergencia en la comunidad.
-            </p>
+            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-4">
+                <div>
+                    <h1 className="text-3xl font-bold">Mascotas Perdidas y Encontradas</h1>
+                    <p className="text-muted-foreground mt-1">
+                        Explora los últimos reportes o crea uno nuevo.
+                    </p>
+                </div>
+                <Button asChild>
+                    <Link href="/report/new">
+                        <PlusCircle className="mr-2 h-4 w-4" /> Crear Reporte
+                    </Link>
+                </Button>
+            </div>
 
             {/* Componente de Filtros */}
             <ReportFilters 

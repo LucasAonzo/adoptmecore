@@ -252,11 +252,42 @@ export const updateReport = async (
     .eq('id', reportId)
     .select()
     .single();
+
   if (error) {
-    console.error('Error updating report:', error);
+    // Mostrar el objeto de error completo para más detalles
+    console.error('Error updating report. Supabase error object:', error);
     return null;
   }
   return data as Report;
+};
+
+// --- NUEVA FUNCIÓN PARA RESOLVER REPORTE USANDO RPC ---
+
+/**
+ * Llama a la función SQL para marcar un reporte como resuelto.
+ * La función SQL maneja la verificación de permisos.
+ * @param supabase Cliente Supabase.
+ * @param reportId ID (UUID) del reporte a resolver.
+ * @param userId ID (UUID) del usuario que intenta resolverlo.
+ * @throws Si la función SQL lanza una excepción (permiso denegado, no encontrado) o hay error RPC.
+ */
+export const resolveReport = async (
+  supabase: SupabaseClient<Database>,
+  reportId: string,
+  userId: string
+): Promise<void> => {
+  const { error } = await supabase.rpc('mark_report_as_resolved', {
+    p_report_id: reportId,
+    p_user_id: userId,
+  });
+
+  if (error) {
+    console.error('Error calling mark_report_as_resolved RPC:', error);
+    // Propagar el error para que lo maneje el hook de mutación
+    // El mensaje de error podría venir de la EXCEPTION lanzada en la función SQL
+    throw new Error(error.message || 'Error al intentar marcar el reporte como resuelto.');
+  }
+  // No devuelve nada en caso de éxito
 };
 
 // --- Helpers ---

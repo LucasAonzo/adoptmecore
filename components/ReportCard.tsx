@@ -17,59 +17,37 @@ import {
 } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { cn } from '@/lib/utils'; // Para combinar clases
-import { AlertTriangle, CheckCircle, HelpCircle, HeartPulse } from 'lucide-react'; // Iconos
+// Quitar importaciones de iconos si ya no se usan directamente aquí
+// import { MapPin, Clock, AlertTriangle, CheckCircle, HelpCircle } from 'lucide-react';
+// Importar los estilos y constantes desde el nuevo archivo
+import { reportTypeStyles, defaultReportStyle } from '@/lib/constants/reportStyles';
 
 interface ReportCardProps {
   report: Report;
 }
 
-// Definir un tipo más explícito para los estilos
-interface ReportTypeStyle {
-  // Usar un tipo literal con los variantes conocidos de Badge
-  badgeVariant: 'destructive' | 'secondary' | 'outline' | 'default';
-  icon: React.ElementType;
-  label: string; // Añadir etiqueta para mostrar
-}
-
-// Mapeo de tipos de reporte a estilos
-// Usamos ReportType como clave directamente
-const reportTypeStyles: Record<ReportType, ReportTypeStyle> = {
-  LOST: { badgeVariant: 'destructive', icon: HelpCircle, label: 'Perdido' },
-  FOUND: { badgeVariant: 'secondary', icon: CheckCircle, label: 'Encontrado' },
-  EMERGENCY: { badgeVariant: 'destructive', icon: AlertTriangle, label: 'Urgencia' },
-};
-
-const defaultReportStyle: ReportTypeStyle = { badgeVariant: 'outline', icon: HelpCircle, label: 'Desconocido' };
-
 export function ReportCard({ report }: ReportCardProps) {
+  const timeAgo = formatDistanceToNow(new Date(report.created_at), { addSuffix: true, locale: es });
+  // Usar los estilos importados
   const { badgeVariant, icon: Icon, label } = reportTypeStyles[report.report_type] || defaultReportStyle;
 
-  // Parsear la fecha y formatearla de forma segura
-  let timeAgo = 'Fecha desconocida';
-  if (report.created_at) {
-    try {
-      const dateObject = parseISO(report.created_at); // Intentar parsear el string ISO
-      if (isValid(dateObject)) { // Verificar si la fecha es válida
-        timeAgo = formatDistanceToNow(dateObject, { addSuffix: true, locale: es });
-      } else {
-        console.warn(`Invalid date format received for report ${report.id}:`, report.created_at);
-      }
-    } catch (error) {
-        console.error(`Error parsing date for report ${report.id}:`, report.created_at, error);
+  // Determinar borde basado en el tipo (usando report.report_type)
+  const cardBorderClass = cn(
+    "border rounded-lg overflow-hidden shadow-sm hover:shadow-md transition-shadow duration-200 bg-card",
+    {
+        'border-destructive border-2': report.report_type === 'EMERGENCY' // Mantener lógica de borde
     }
-  }
+  );
 
   return (
     <Link href={`/report/${report.id}`} passHref legacyBehavior>
       <a className="block hover:shadow-lg transition-shadow duration-200 ease-in-out h-full">
-        <Card className={cn("overflow-hidden h-full flex flex-col", {
-          'border-destructive border-2': report.report_type === 'EMERGENCY'
-        })}>
+        <Card className={cardBorderClass}>
           {/* Banner de Urgencia */}
           {report.report_type === 'EMERGENCY' && (
             <div className="bg-destructive/10 px-4 py-1 text-center">
               <p className="text-xs font-medium text-destructive flex items-center justify-center">
-                <HeartPulse className="h-4 w-4 mr-1 animate-pulse" />
+                <Icon className="h-4 w-4 mr-1 animate-pulse" />
                 Requiere Atención Urgente
               </p>
             </div>

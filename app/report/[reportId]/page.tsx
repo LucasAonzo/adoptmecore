@@ -1,38 +1,31 @@
 'use client';
 
 import React from 'react';
-import { useParams, usePathname } from 'next/navigation';
+import { useParams, usePathname, useRouter } from 'next/navigation';
 import Image from 'next/image';
 import { formatDistanceToNow } from 'date-fns';
 import { es } from 'date-fns/locale';
-import { Loader2, AlertTriangle, CheckCircle, HelpCircle, Info, Phone, Mail, MapPin } from 'lucide-react';
+import { Loader2, AlertTriangle, CheckCircle, HelpCircle, Info, Phone, Mail, MapPin, CheckSquare, Pencil } from 'lucide-react';
+import Link from 'next/link';
 
 import { useReport } from '@/lib/hooks/useReportsQueries';
+import { useResolveReport } from '@/lib/hooks/useReportsMutations';
+import { useAuth } from '@/lib/providers/AuthProvider';
 import { Badge } from "@/components/ui/badge";
-// Reutilizaremos la lógica de estilos de ReportCard (podría extraerse a un helper)
+import { Button } from "@/components/ui/button";
 import { type ReportType } from '@/lib/services/reports';
 import { ShareButtons } from '@/components/ShareButtons';
 import { ReportMap } from '@/components/maps/ReportMap';
-
-// Mapeo de tipos de reporte a estilos (duplicado de ReportCard, considerar refactorizar)
-interface ReportTypeStyle {
-  badgeVariant: 'destructive' | 'secondary' | 'outline' | 'default';
-  icon: React.ElementType;
-  label: string;
-}
-const reportTypeStyles: Record<ReportType, ReportTypeStyle> = {
-  LOST: { badgeVariant: 'destructive', icon: HelpCircle, label: 'Perdido' },
-  FOUND: { badgeVariant: 'secondary', icon: CheckCircle, label: 'Encontrado' },
-  EMERGENCY: { badgeVariant: 'destructive', icon: AlertTriangle, label: 'Urgencia' },
-};
-const defaultReportStyle: ReportTypeStyle = { badgeVariant: 'outline', icon: HelpCircle, label: 'Desconocido' };
+import { reportTypeStyles, defaultReportStyle } from '@/lib/constants/reportStyles';
 
 export default function ReportDetailPage() {
   const params = useParams();
   const pathname = usePathname();
+  const router = useRouter();
   const reportId = params.reportId as string; // Obtener ID de la URL
-
+  const { user } = useAuth(); // Obtener usuario actual
   const { data: report, error, isLoading, isError } = useReport(reportId);
+  const { mutate: resolveReportMutate, isPending: isResolving } = useResolveReport();
 
   // Estado de Carga
   if (isLoading) {
@@ -77,6 +70,33 @@ export default function ReportDetailPage() {
   const mapReports = report ? [report] : []; // ReportMap espera un array
   const mapCenter = report ? { lat: report.location_lat, lng: report.location_lon } : undefined;
 
+  // Determinar si el usuario actual es el dueño y el reporte está activo
+  const isOwner = user?.id === report.reported_by_user_id;
+  const isActive = report.status === 'ACTIVE';
+
+  // Función actualizada para usar resolveReportMutate
+  const handleMarkAsResolved = () => {
+    if (!report || !user) {
+      console.error("Report or user data is missing.");
+      return; 
+    }
+    
+    resolveReportMutate({ 
+      reportId: report.id, 
+      userId: user.id 
+    }, {
+      onSuccess: () => {
+        // El hook ya muestra el toast y invalida queries.
+        // Añadimos la redirección aquí.
+        // Opcional: un pequeño delay para que se vea el toast
+        setTimeout(() => {
+          router.push('/lost-found'); // <-- Redirigir a la lista principal (o '/my-reports')
+        }, 1500); // Espera 1.5 segundos antes de redirigir
+      },
+      // onError sigue siendo manejado por el hook por defecto
+    });
+  };
+
   return (
     <main className="container mx-auto px-4 py-8">
       <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
@@ -113,10 +133,16 @@ export default function ReportDetailPage() {
             </h1>
             {(report.pet_name && report.pet_name !== report.pet_type) || (!report.pet_name && report.pet_breed) ? (
                  <p className="text-lg text-muted-foreground capitalize">
-                    {report.pet_name ? report.pet_type : ''} {report.pet_breed ? `- ${report.pet_breed}` : ''}
+                    {report.pet_type} {report.pet_breed ? `- ${report.pet_breed}` : ''}
                  </p>
             ) : null}
              <p className="text-sm text-muted-foreground mt-1">Reportado {timeAgo}</p>
+             {/* Mostrar estado si no es ACTIVO */} 
+             {report.status !== 'ACTIVE' && (
+                <Badge variant={report.status === 'RESOLVED' ? 'default' : 'outline'} className="mt-2">
+                    {report.status === 'RESOLVED' ? 'Resuelto' : report.status}
+                </Badge>
+             )}
           </div>
 
            {/* Descripción */}
@@ -161,6 +187,36 @@ export default function ReportDetailPage() {
                  Contacta directamente a la persona que realizó el reporte.
               </p>
             </div>
+
+            {/* --- Botones de Acción (SOLO si es dueño y está activo) --- */}
+            {isOwner && isActive && (
+              <div className="pt-4 border-t flex flex-col md:flex-row md:items-center gap-3">
+                  {/* Botón Marcar como Resuelto */} 
+                   <Button
+                      onClick={handleMarkAsResolved}
+                      disabled={isResolving}
+                      variant="outline"
+                      className="w-full md:w-auto"
+                   >
+                       {isResolving ? (
+                          <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Resolviendo...</>
+                       ) : (
+                           <><CheckSquare className="mr-2 h-4 w-4" /> Marcar como Resuelto</>
+                       )}
+                   </Button>
+                   {/* --- NUEVO: Botón Editar Reporte --- */} 
+                   <Button 
+                      asChild // Para que el botón se comporte como el Link interno
+                      variant="secondary" 
+                      className="w-full md:w-auto"
+                   >
+                      <Link href={`/report/${reportId}/edit`}> 
+                          <Pencil className="mr-2 h-4 w-4" /> Editar Reporte
+                      </Link>
+                   </Button>
+                   {/* Podríamos añadir un texto explicativo común aquí si quisiéramos */}
+               </div>
+             )}
 
             {/* Botones de Compartir */}
             <div className="pt-4 border-t">
