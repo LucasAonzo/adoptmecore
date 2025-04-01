@@ -4,10 +4,10 @@ import React from 'react';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { createClient } from '@/lib/supabaseClient';
-import { useRouter } from 'next/navigation';
+import { useRouter, usePathname } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import type { User } from '@supabase/supabase-js';
-import { PawPrint, Menu, X } from 'lucide-react'; // Icons
+import { PawPrint, Menu, X, LogOut, UserCircle, LayoutGrid, PlusCircle, Mail, Inbox } from 'lucide-react'; // Icons
 import {
     Sheet,
     SheetContent,
@@ -18,134 +18,190 @@ import {
     SheetClose
 } from "@/components/ui/sheet";
 import { useAuth } from '@/lib/providers/AuthProvider';
+import { cn } from '@/lib/utils';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger, DropdownMenuGroup } from "@/components/ui/dropdown-menu";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+
+// --- Enlaces Principales (Siempre visibles) ---
+const mainNavLinks = [
+  { href: '/', label: 'Inicio' },
+  { href: '/adopt', label: 'Adoptar' },
+  { href: '/lost-found', label: 'Perdidos/Encontrados' },
+];
+
+// --- Enlaces del Menú de Usuario (Visibles logueado) ---
+const userMenuLinks = [
+  { href: '/pets', label: 'Ver Mascotas', icon: LayoutGrid },
+  { href: '/pets/new', label: 'Agregar Mascota', icon: PlusCircle },
+  { href: '/my-requests', label: 'Mis Solicitudes', icon: Mail },
+  { href: '/received-requests', label: 'Solicitudes Recibidas', icon: Inbox },
+];
 
 export default function Navbar() {
     const router = useRouter();
     const { user, session, isLoading, supabase } = useAuth();
     const [isSheetOpen, setIsSheetOpen] = useState(false);
+    const pathname = usePathname();
 
     const handleLogout = async () => {
-        setIsSheetOpen(false); // Cerrar sheet antes o después del logout
-        const { error } = await supabase.auth.signOut();
-        if (error) {
-            console.error('Error logging out:', error.message);
-        } else {
-            console.log('Logout successful');
-        }
+        setIsSheetOpen(false); // Cerrar sheet si está abierto
+        await supabase?.auth.signOut();
+        router.push('/'); // Redirigir al inicio
+        router.refresh(); // Refrescar para asegurar estado actualizado
     };
 
-    // --- Definir los enlaces y botones --- 
-
-    // Links comunes
-    const commonLinks = (
-         <Link href="/pets" className="text-sm font-medium text-muted-foreground transition-colors hover:text-primary">
-            Ver Mascotas
-        </Link>
-    );
-
-    // Links/Botones para usuarios logueados
-    const loggedInItems = (
-        <>
-            <Link href="/pets/new" className="text-sm font-medium text-muted-foreground transition-colors hover:text-primary">
-                Agregar Mascota
-            </Link>
-            <Link href="/my-requests" className="text-sm font-medium text-muted-foreground transition-colors hover:text-primary">
-                 Mis Solicitudes
-            </Link>
-            <Link href="/received-requests" className="text-sm font-medium text-muted-foreground transition-colors hover:text-primary">
-                 Solicitudes Recibidas
-            </Link>
-            <Button variant="ghost" onClick={handleLogout} className="text-sm font-medium text-muted-foreground transition-colors hover:text-primary hover:bg-transparent justify-start p-0 h-auto">
-                Logout ({user?.email?.split('@')[0]}) {/* Safe navigation for user */}
-            </Button>
-        </>
-    );
-
-    // Botones para usuarios no logueados
-    const loggedOutButtons = (
-         <>
-             <Button variant="ghost" asChild size="sm">
-                <Link href="/login">Login</Link>
-            </Button>
-            <Button asChild size="sm">
-                <Link href="/signup">Sign Up</Link>
-            </Button>
-        </>
-    );
-
-     const loadingButton = (
-        <Button variant="ghost" disabled size="sm">
-            Cargando...
-        </Button>
-     );
-
+    const getInitials = (email: string | undefined): string => {
+        return email ? email.substring(0, 2).toUpperCase() : 'U';
+    };
 
     return (
-        <header className="fixed top-0 left-0 right-0 z-50 bg-background/80 backdrop-blur-sm border-b">
-            <div className="container flex h-16 items-center justify-between">
+        <header className="sticky top-0 z-50 w-full border-b bg-blue-600 backdrop-blur supports-[backdrop-filter]:bg-blue-600/60 py-2">
+            <div className="container flex h-14 items-center justify-between px-6 md:px-8">
                 {/* Logo */} 
-                 <Link href="/" className="flex items-center gap-2 font-bold">
-                    <PawPrint className="h-6 w-6 text-primary" />
-                    <span>AdoptMe Tuc</span>
+                 <Link href="/" className="flex items-center gap-2 font-bold mr-8 flex-shrink-0">
+                    <PawPrint className="h-6 w-6 text-white" />
+                    <span className="hidden sm:inline-block text-white">AdoptMe Tuc</span>
                 </Link>
 
-                {/* --- Navegación Escritorio --- */} 
-                 <nav className="hidden md:flex md:items-center md:gap-5 lg:gap-6">
-                     {commonLinks}
-                     {!isLoading && user && loggedInItems}
-                     {isLoading && loadingButton}
-                     {!isLoading && !user && loggedOutButtons}
-                 </nav>
+                {/* --- Navegación Escritorio (Enlaces Principales) --- */} 
+                 <nav className="hidden md:flex items-center gap-4 lg:gap-6">
+                     {mainNavLinks.map((link) => (
+                        <Link
+                            key={link.href}
+                            href={link.href}
+                            className={cn(
+                                "text-sm font-medium transition-colors hover:text-white/80",
+                                pathname === link.href ? "text-white font-semibold" : "text-white/70"
+                            )}
+                        >
+                            {link.label}
+                         </Link>
+                     ))}
+                  </nav>
+
+                {/* --- Menú Usuario / Botones Auth (Escritorio) --- */} 
+                 <div className="hidden md:flex items-center gap-2 md:gap-4">
+                    {isLoading && (
+                        <Button variant="ghost" disabled size="sm" className="text-white">Cargando...</Button>
+                     )}
+                    {!isLoading && user && (
+                        <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                                <Button variant="ghost" className="relative h-9 w-auto px-2 py-1 rounded-full text-white hover:bg-blue-700">
+                                    <Avatar className="h-7 w-7">
+                                        <AvatarFallback>{getInitials(user.email)}</AvatarFallback>
+                                    </Avatar>
+                                    <span className="text-sm font-medium ml-2 hidden lg:inline-block truncate max-w-[150px]">{user.email}</span>
+                                </Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent className="w-56" align="end" forceMount>
+                                <DropdownMenuLabel className="font-normal">
+                                    <div className="flex flex-col space-y-1">
+                                        <p className="text-sm font-medium leading-none">Mi Cuenta</p>
+                                        <p className="text-xs leading-none text-muted-foreground">
+                                            {user.email}
+                                        </p>
+                                    </div>
+                                </DropdownMenuLabel>
+                                <DropdownMenuSeparator />
+                                <DropdownMenuGroup>
+                                    {userMenuLinks.map((link) => (
+                                        <DropdownMenuItem key={link.href} asChild className="cursor-pointer">
+                                            <Link href={link.href}>
+                                                <link.icon className="mr-2 h-4 w-4" />
+                                                <span>{link.label}</span>
+                                            </Link>
+                                        </DropdownMenuItem>
+                                    ))}
+                                </DropdownMenuGroup>
+                                <DropdownMenuSeparator />
+                                <DropdownMenuItem onClick={handleLogout} className="cursor-pointer">
+                                    <LogOut className="mr-2 h-4 w-4" />
+                                    <span>Logout</span>
+                                </DropdownMenuItem>
+                            </DropdownMenuContent>
+                        </DropdownMenu>
+                    )}
+                     {!isLoading && !user && (
+                         <div className="flex items-center gap-2">
+                             <Button variant="ghost" asChild size="sm" className="text-white hover:bg-blue-700">
+                                <Link href="/login">Login</Link>
+                             </Button>
+                             <Button asChild size="sm" variant="secondary" className="bg-white text-blue-600 hover:bg-white/90">
+                                <Link href="/signup">Sign Up</Link>
+                             </Button>
+                         </div>
+                     )}
+                  </div>
 
                 {/* --- Botón Menú Móvil --- */} 
-                <div className="md:hidden">
-                    <Sheet open={isSheetOpen} onOpenChange={setIsSheetOpen}>
-                        <SheetTrigger asChild>
-                             <Button variant="outline" size="icon">
-                                {isSheetOpen ? <X className="h-4 w-4" /> : <Menu className="h-4 w-4" />}
-                                <span className="sr-only">Abrir menú</span>
-                            </Button>
-                        </SheetTrigger>
-                        <SheetContent side="right">
-                            <SheetHeader>
-                                <SheetTitle className="text-left">
-                                     {/* Wrap logo link with SheetClose for mobile */} 
-                                     <SheetClose asChild>
-                                        <Link href="/" className="flex items-center gap-2 font-bold">
-                                            <PawPrint className="h-6 w-6 text-primary" />
-                                            <span>AdoptMe Tuc</span>
+                 <Sheet open={isSheetOpen} onOpenChange={setIsSheetOpen}>
+                    <SheetTrigger asChild>
+                        <Button variant="ghost" size="icon" className="md:hidden text-white hover:bg-blue-700">
+                            <Menu className="h-6 w-6" />
+                            <span className="sr-only">Abrir menú</span>
+                        </Button>
+                    </SheetTrigger>
+                    <SheetContent side="right" className="w-[300px] sm:w-[400px] bg-blue-600 border-l-blue-500">
+                        <SheetHeader className="text-left mb-6">
+                            <SheetTitle>
+                                <Link href="/" className="flex items-center gap-2 font-bold text-white" onClick={() => setIsSheetOpen(false)}>
+                                    <PawPrint className="h-6 w-6" />
+                                    <span>AdoptMe Tuc</span>
+                                </Link>
+                            </SheetTitle>
+                        </SheetHeader>
+                        <nav className="flex flex-col space-y-3">
+                            {mainNavLinks.map((link) => (
+                                <SheetClose asChild key={link.href}>
+                                    <Link
+                                        href={link.href}
+                                        className={cn(
+                                            "text-lg font-medium transition-colors hover:text-white/80",
+                                            pathname === link.href ? "text-white font-semibold" : "text-white/70"
+                                        )}
+                                    >
+                                        {link.label}
+                                    </Link>
+                                </SheetClose>
+                            ))}
+                            
+                             {/* Links de usuario en móvil */} 
+                             {user && <div className="border-t border-primary-foreground/20 pt-4 mt-4 space-y-3"> { /* Separador visual */} 
+                                {userMenuLinks.map((link) => (
+                                    <SheetClose asChild key={link.href}>
+                                        <Link href={link.href} className="flex items-center text-lg font-medium text-primary-foreground/70 transition-colors hover:text-primary-foreground">
+                                            <link.icon className="mr-3 h-5 w-5" /> 
+                                            {link.label}
                                         </Link>
-                                     </SheetClose>
-                                </SheetTitle>
-                            </SheetHeader>
-                            {/* --- Navegación Móvil --- */} 
-                            <nav className="flex flex-col space-y-4 mt-6">
-                                 {/* Wrap common links with SheetClose */} 
-                                <SheetClose asChild>{commonLinks}</SheetClose>
-                                
-                                {/* Wrap logged in items with SheetClose */} 
-                                {!isLoading && user && (
-                                    React.Children.map(loggedInItems.props.children, child => (
-                                        <SheetClose asChild>{child}</SheetClose>
-                                    ))
-                                )}
-                                
-                                {isLoading && (
-                                     <Button variant="ghost" disabled className="justify-start">
-                                        Cargando...
+                                    </SheetClose>
+                                ))}
+                                <SheetClose asChild>
+                                    <Button variant="ghost" onClick={handleLogout} className="w-full justify-start text-lg font-medium text-primary-foreground/70 transition-colors hover:text-primary-foreground hover:bg-transparent px-0">
+                                        <LogOut className="mr-3 h-5 w-5" />
+                                        Logout
                                     </Button>
-                                )}
-                                
-                                {/* Wrap logged out buttons with SheetClose */} 
-                                {!isLoading && !user && (
-                                     React.Children.map(loggedOutButtons.props.children, child => (
-                                        <SheetClose asChild>{child}</SheetClose>
-                                    ))
-                                )}
-                            </nav>
-                        </SheetContent>
-                    </Sheet>
-                 </div>
+                                </SheetClose>
+                             </div>}
+                              
+                               {/* Botones Auth en móvil */} 
+                              {!isLoading && !user && (
+                                  <div className="border-t border-primary-foreground/20 pt-4 mt-4 space-y-3"> { /* Separador visual */} 
+                                      <SheetClose asChild>
+                                         <Button variant="secondary" asChild className="w-full text-lg">
+                                             <Link href="/login">Login</Link>
+                                         </Button>
+                                      </SheetClose>
+                                      <SheetClose asChild>
+                                         <Button variant="secondary" asChild className="w-full text-lg">
+                                             <Link href="/signup">Sign Up</Link>
+                                         </Button>
+                                      </SheetClose>
+                                  </div>
+                              )}
+                        </nav>
+                    </SheetContent>
+                </Sheet>
             </div>
         </header>
     );
