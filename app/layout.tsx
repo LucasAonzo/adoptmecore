@@ -24,7 +24,7 @@ export default function RootLayout({
         <AuthProvider>
           <ReactQueryProvider>
             <Navbar />
-            <main className="flex-1 overflow-y-auto min-h-0">
+            <main className="flex-1">
               {children}
             </main>
             <Toaster />
