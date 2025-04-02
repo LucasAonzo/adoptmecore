@@ -7,7 +7,7 @@ import { createClient } from '@/lib/supabaseClient';
 import { useRouter, usePathname } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import type { User } from '@supabase/supabase-js';
-import { PawPrint, Menu, X, LogOut, UserCircle, LayoutGrid, PlusCircle, Mail, Inbox } from 'lucide-react'; // Icons
+import { PawPrint, Menu, X, LogOut, UserCircle, LayoutGrid, PlusCircle, Mail, Inbox, MessageSquare } from 'lucide-react'; // Icons
 import {
     Sheet,
     SheetContent,
@@ -84,6 +84,18 @@ export default function Navbar() {
                     {isLoading && (
                         <Button variant="ghost" disabled size="sm" className="text-white">Cargando...</Button>
                      )}
+                    {/* Added My Chats link BEFORE the dropdown */} 
+                    {!isLoading && user && (
+                        <Link
+                            href="/my-chats"
+                            className={cn(
+                                "text-sm font-medium transition-colors hover:text-white/80",
+                                pathname === '/my-chats' ? "text-white font-semibold" : "text-white/70"
+                            )}
+                        >
+                            Mis Chats
+                        </Link>
+                    )}
                     {!isLoading && user && (
                         <DropdownMenu>
                             <DropdownMenuTrigger asChild>
@@ -94,7 +106,17 @@ export default function Navbar() {
                                     <span className="text-sm font-medium ml-2 hidden lg:inline-block truncate max-w-[150px]">{user.email}</span>
                                 </Button>
                             </DropdownMenuTrigger>
-                            <DropdownMenuContent className="w-56" align="end" forceMount>
+                            <DropdownMenuContent 
+                                align="end" 
+                                forceMount 
+                                className={cn(
+                                    "z-50 min-w-[8rem] overflow-hidden rounded-md border bg-popover p-1 text-popover-foreground shadow-md",
+                                    "data-[state=open]:animate-in data-[state=open]:fade-in-0 data-[state=open]:zoom-in-95",
+                                    "data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=closed]:zoom-out-95",
+                                    "data-[side=bottom]:slide-in-from-top-2 data-[side=left]:slide-in-from-right-2 data-[side=right]:slide-in-from-left-2 data-[side=top]:slide-in-from-bottom-2",
+                                    "w-56"
+                                )}
+                            >
                                 <DropdownMenuLabel className="font-normal">
                                     <div className="flex flex-col space-y-1">
                                         <p className="text-sm font-medium leading-none">Mi Cuenta</p>
@@ -105,6 +127,12 @@ export default function Navbar() {
                                 </DropdownMenuLabel>
                                 <DropdownMenuSeparator />
                                 <DropdownMenuGroup>
+                                    <DropdownMenuItem asChild className="cursor-pointer">
+                                        <Link href="/profile/edit">
+                                            <UserCircle className="mr-2 h-4 w-4" />
+                                            <span>Editar Perfil</span>
+                                        </Link>
+                                    </DropdownMenuItem>
                                     {userMenuLinks.map((link) => (
                                         <DropdownMenuItem key={link.href} asChild className="cursor-pointer">
                                             <Link href={link.href}>
@@ -168,6 +196,20 @@ export default function Navbar() {
                             
                              {/* Links de usuario en móvil */} 
                              {user && <div className="border-t border-primary-foreground/20 pt-4 mt-4 space-y-3"> { /* Separador visual */} 
+                                {/* Added My Chats link for mobile */} 
+                                <SheetClose asChild>
+                                     <Link href="/my-chats" className="flex items-center text-lg font-medium text-primary-foreground/70 transition-colors hover:text-primary-foreground">
+                                         <MessageSquare className="mr-3 h-5 w-5" /> 
+                                         Mis Chats
+                                     </Link>
+                                 </SheetClose>
+                                 {/* Add Edit Profile Link for Mobile Here */}
+                                 <SheetClose asChild>
+                                     <Link href="/profile/edit" className="flex items-center text-lg font-medium text-primary-foreground/70 transition-colors hover:text-primary-foreground">
+                                         <UserCircle className="mr-3 h-5 w-5" /> 
+                                         Editar Perfil
+                                     </Link>
+                                 </SheetClose>
                                 {userMenuLinks.map((link) => (
                                     <SheetClose asChild key={link.href}>
                                         <Link href={link.href} className="flex items-center text-lg font-medium text-primary-foreground/70 transition-colors hover:text-primary-foreground">

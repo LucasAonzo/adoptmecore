@@ -1,5 +1,6 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+    reactStrictMode: false, // Temporarily disabled for debugging hook rule violation
     images: {
         remotePatterns: [
             {

@@ -5,12 +5,24 @@ import { useParams, usePathname, useRouter } from 'next/navigation';
 import Image from 'next/image';
 import { formatDistanceToNow } from 'date-fns';
 import { es } from 'date-fns/locale';
-import { Loader2, AlertTriangle, CheckCircle, HelpCircle, Info, Phone, Mail, MapPin, CheckSquare, Pencil } from 'lucide-react';
+import { 
+  Loader2, 
+  AlertTriangle, 
+  CheckCircle, 
+  HelpCircle, 
+  Info, 
+  Phone, 
+  Mail, 
+  MapPin, 
+  CheckSquare, 
+  Pencil
+} from 'lucide-react';
 import Link from 'next/link';
 
 import { useReport } from '@/lib/hooks/useReportsQueries';
 import { useResolveReport } from '@/lib/hooks/useReportsMutations';
 import { useAuth } from '@/lib/providers/AuthProvider';
+
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { type ReportType } from '@/lib/services/reports';
@@ -22,22 +34,22 @@ export default function ReportDetailPage() {
   const params = useParams();
   const pathname = usePathname();
   const router = useRouter();
-  const reportId = params.reportId as string; // Obtener ID de la URL
-  const { user } = useAuth(); // Obtener usuario actual
+  const reportId = params.reportId as string;
+  const { user, isLoading: isAuthLoading } = useAuth();
   const { data: report, error, isLoading, isError } = useReport(reportId);
   const { mutate: resolveReportMutate, isPending: isResolving } = useResolveReport();
+  
+  const pageIsLoading = isLoading || isAuthLoading;
 
-  // Estado de Carga
-  if (isLoading) {
+  if (pageIsLoading) {
     return (
       <div className="container mx-auto px-4 py-8 flex justify-center items-center min-h-[60vh]">
         <Loader2 className="h-12 w-12 animate-spin text-primary" />
-        <span className="ml-3 text-lg">Cargando reporte...</span>
+        <span className="ml-3 text-lg">Cargando...</span>
       </div>
     );
   }
 
-  // Estado de Error
   if (isError) {
     return (
       <div className="container mx-auto px-4 py-8 text-center text-destructive min-h-[60vh]">
@@ -47,7 +59,6 @@ export default function ReportDetailPage() {
     );
   }
 
-  // Si no hay reporte (aunque useQuery debería lanzar error si no lo encuentra)
   if (!report) {
      return (
       <div className="container mx-auto px-4 py-8 text-center text-muted-foreground min-h-[60vh]">
@@ -57,24 +68,18 @@ export default function ReportDetailPage() {
     );
   }
 
-  // Renderizar detalles del reporte
   const { badgeVariant, icon: Icon, label } = reportTypeStyles[report.report_type] || defaultReportStyle;
   const timeAgo = formatDistanceToNow(new Date(report.created_at), { addSuffix: true, locale: es });
 
-  // Construir URL completa para compartir (asumiendo que la app corre en localhost:3000 por ahora)
-  // En producción, usarías process.env.NEXT_PUBLIC_SITE_URL o similar
   const fullUrl = typeof window !== 'undefined' ? `${window.location.origin}${pathname}` : `http://localhost:3000${pathname}`;
   const shareTitle = `Reporte ${label}: ${report.pet_name || report.pet_type}`;
 
-  // Preparar datos para el mapa (si el reporte existe)
-  const mapReports = report ? [report] : []; // ReportMap espera un array
+  const mapReports = report ? [report] : [];
   const mapCenter = report ? { lat: report.location_lat, lng: report.location_lon } : undefined;
 
-  // Determinar si el usuario actual es el dueño y el reporte está activo
   const isOwner = user?.id === report.reported_by_user_id;
   const isActive = report.status === 'ACTIVE';
 
-  // Función actualizada para usar resolveReportMutate
   const handleMarkAsResolved = () => {
     if (!report || !user) {
       console.error("Report or user data is missing.");
@@ -86,21 +91,16 @@ export default function ReportDetailPage() {
       userId: user.id 
     }, {
       onSuccess: () => {
-        // El hook ya muestra el toast y invalida queries.
-        // Añadimos la redirección aquí.
-        // Opcional: un pequeño delay para que se vea el toast
         setTimeout(() => {
-          router.push('/lost-found'); // <-- Redirigir a la lista principal (o '/my-reports')
-        }, 1500); // Espera 1.5 segundos antes de redirigir
+          router.push('/lost-found');
+        }, 1500);
       },
-      // onError sigue siendo manejado por el hook por defecto
     });
   };
 
   return (
     <main className="container mx-auto px-4 py-8">
       <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-        {/* Columna Izquierda (Imagen y tipo) */}
         <div className="md:col-span-1 space-y-4">
           {report.image_url ? (
             <div className="relative w-full aspect-square rounded-lg overflow-hidden bg-muted">
@@ -110,7 +110,7 @@ export default function ReportDetailPage() {
                 fill
                 style={{ objectFit: 'cover' }}
                 sizes="(max-width: 768px) 100vw, 33vw"
-                priority // Priorizar carga de imagen principal
+                priority
               />
             </div>
           ) : (
@@ -124,9 +124,7 @@ export default function ReportDetailPage() {
           </Badge>
         </div>
 
-        {/* Columna Derecha (Detalles) */}
         <div className="md:col-span-2 space-y-6">
-          {/* Encabezado */}
           <div>
             <h1 className="text-3xl font-bold capitalize">
                 {report.pet_name || report.pet_type}
@@ -137,7 +135,6 @@ export default function ReportDetailPage() {
                  </p>
             ) : null}
              <p className="text-sm text-muted-foreground mt-1">Reportado {timeAgo}</p>
-             {/* Mostrar estado si no es ACTIVO */} 
              {report.status !== 'ACTIVE' && (
                 <Badge variant={report.status === 'RESOLVED' ? 'default' : 'outline'} className="mt-2">
                     {report.status === 'RESOLVED' ? 'Resuelto' : report.status}
@@ -145,68 +142,67 @@ export default function ReportDetailPage() {
              )}
           </div>
 
-           {/* Descripción */}
            <div>
              <h2 className="text-xl font-semibold mb-2">Descripción</h2>
              <p className="text-muted-foreground whitespace-pre-wrap">{report.description}</p>
            </div>
 
-           {/* Ubicación y Mapa */}
            <div>
              <h2 className="text-xl font-semibold mb-2 flex items-center">
                <MapPin className="mr-2 h-5 w-5" /> Ubicación
              </h2>
-             {/* Mostrar descripción si existe */} 
              {report.location_description && (
                   <p className="text-muted-foreground mb-3">
                      {report.location_description}
                   </p>
              )}
-             {/* Renderizar el mapa */} 
              <div className="mb-3">
                  <ReportMap
                      reports={mapReports}
                      initialCenter={mapCenter}
-                     initialZoom={15} // Zoom más cercano para el detalle
+                     initialZoom={15}
                   />
              </div>
-             {/* Mostrar coordenadas */} 
              <p className="text-xs text-muted-foreground/80">
                (Lat: {report.location_lat.toFixed(5)}, Lon: {report.location_lon.toFixed(5)})
              </p>
            </div>
 
-            {/* Contacto */}
             <div>
               <h2 className="text-xl font-semibold mb-2">Información de Contacto</h2>
-              <div className="flex items-center space-x-2 bg-secondary/50 p-3 rounded-md border">
-                 <Info className="h-5 w-5 text-secondary-foreground" />
-                 <p className="text-secondary-foreground font-medium">{report.contact_info}</p>
-              </div>
-              <p className="text-xs text-muted-foreground mt-1">
-                 Contacta directamente a la persona que realizó el reporte.
-              </p>
+              {report.contact_info ? (
+                <>
+                  <div className="flex items-center space-x-2 bg-secondary/50 p-3 rounded-md border">
+                    <Info className="h-5 w-5 text-secondary-foreground flex-shrink-0" />
+                    <p className="text-secondary-foreground font-medium">{report.contact_info}</p>
+                  </div>
+                  <p className="text-xs text-muted-foreground mt-1">
+                    Contacta directamente a la persona que realizó el reporte.
+                  </p>
+                </>
+              ) : (
+                <p className="text-sm text-muted-foreground">
+                  No hay información de contacto adicional provista.
+                </p>
+              )}
             </div>
 
-            {/* --- Botones de Acción (SOLO si es dueño y está activo) --- */}
             {isOwner && isActive && (
               <div className="pt-4 border-t flex flex-col md:flex-row md:items-center gap-3">
-                  {/* Botón Marcar como Resuelto */} 
                    <Button
                       onClick={handleMarkAsResolved}
                       disabled={isResolving}
                       variant="outline"
                       className="w-full md:w-auto"
                    >
-                       {isResolving ? (
+                        {isResolving ? (
                           <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Resolviendo...</>
                        ) : (
                            <><CheckSquare className="mr-2 h-4 w-4" /> Marcar como Resuelto</>
                        )}
                    </Button>
-                   {/* --- NUEVO: Botón Editar Reporte --- */} 
                    <Button 
-                      asChild // Para que el botón se comporte como el Link interno
+                      asChild 
                       variant="secondary" 
                       className="w-full md:w-auto"
                    >
@@ -214,11 +210,9 @@ export default function ReportDetailPage() {
                           <Pencil className="mr-2 h-4 w-4" /> Editar Reporte
                       </Link>
                    </Button>
-                   {/* Podríamos añadir un texto explicativo común aquí si quisiéramos */}
                </div>
              )}
 
-            {/* Botones de Compartir */}
             <div className="pt-4 border-t">
               <h3 className="text-md font-semibold mb-3">Compartir este reporte</h3>
               <ShareButtons url={fullUrl} title={shareTitle} description={report.description} />
