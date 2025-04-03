@@ -1,11 +1,15 @@
 'use client'; // Necesario para hooks como useLoadScript
 
 import React from 'react';
-// Corregido: Importar ReportFormData desde el schema
+// Corregir imports de tipos y componentes
 import { ReportForm } from '@/components/forms/ReportForm'; 
-import { type ReportFormData } from '@/lib/schemas/reportSchema'; 
+import { type ReportFormData, type ReportSubmitData } from '@/lib/schemas/reportSchema'; 
 import { useLoadScript } from '@react-google-maps/api';
 import { Loader2 } from 'lucide-react'; // Para el spinner
+// Importar el hook de mutación
+import { useCreateReport } from '@/lib/hooks/useReportsMutations';
+import { useRouter } from 'next/navigation'; // Importar useRouter
+import { type Report } from '@/lib/services/reports'; // Importar tipo Report para onSuccess
 
 // Definir las librerías de Google Maps necesarias - Corregido tipo
 const libraries: ("places" | "drawing" | "geometry" | "visualization")[] = ["places"];
@@ -14,16 +18,42 @@ const libraries: ("places" | "drawing" | "geometry" | "visualization")[] = ["pla
 // import ReportForm from '@/components/forms/ReportForm';
 
 export default function NewReportPage() {
+  const router = useRouter(); // Obtener instancia del router
   const { isLoaded, loadError } = useLoadScript({
     googleMapsApiKey: process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY || '', // Reemplaza con tu variable de entorno
     libraries,
   });
 
-  // Placeholder para la función onSubmit - Corregido tipo
+  // Obtener la función de mutación y el estado pendiente
+  const { mutate: createReportMutate, isPending: isSubmittingReport } = useCreateReport();
+
+  // Función onSubmit que llama a la mutación
   const handleReportSubmit = (values: ReportFormData) => {
-    console.log("Formulario enviado:", values);
-    // Aquí iría la lógica para enviar los datos (ej. mutación de React Query)
-    alert("Formulario enviado (ver consola)"); // Feedback temporal
+    console.log("Intentando enviar formulario:", values);
+    
+    // Separar imageFile del resto de los datos
+    const { imageFile, ...reportDataValues } = values;
+
+    // Asegurarse de que reportDataValues cumple con ReportSubmitData (puede requerir ajustes)
+    // Por ahora, asumimos una conversión directa. Si hay campos extra/faltantes, ajustar aquí.
+    const reportData: ReportSubmitData = reportDataValues as ReportSubmitData; 
+    
+    console.log("Datos para mutación:", { reportData, imageFile });
+
+    // Llamar a la mutación
+    createReportMutate(
+      { reportData, imageFile }, 
+      {
+        // Añadir callback onSuccess para redirección
+        onSuccess: (createdReport: Report) => {
+          // La mutación base ya muestra el toast de éxito
+          // Redirigir a la página de detalles del reporte creado
+          console.log('Reporte creado con ID:', createdReport.id, 'Redirigiendo...');
+          router.push(`/report/${createdReport.id}`);
+        },
+        // onError ya es manejado por el hook useCreateReport (muestra toast)
+      }
+    );
   };
 
   return (
@@ -50,8 +80,12 @@ export default function NewReportPage() {
 
         {/* Renderizar el formulario SOLO cuando el script esté cargado y no haya error */}
         {isLoaded && !loadError && (
-           // Pasar la función onSubmit al formulario
-           <ReportForm onSubmit={handleReportSubmit} />
+           // Pasar la función onSubmit y el estado isSubmitting
+           <ReportForm 
+             onSubmit={handleReportSubmit} 
+             isSubmitting={isSubmittingReport} 
+             submitButtonText="Crear Reporte" // Texto explícito para claridad
+           />
         )}
       </div>
     </main>

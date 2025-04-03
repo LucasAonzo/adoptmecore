@@ -5,7 +5,7 @@ import { Database } from '../database.types';
 export type Profile = Database['public']['Tables']['profiles']['Row'];
 
 // Type for update payload
-export type UpdateProfilePayload = Pick<Profile, 'full_name' | 'username' | 'avatar_url'>;
+export type UpdateProfilePayload = Pick<Profile, 'username' | 'avatar_url' | 'first_name' | 'last_name' | 'phone_number' | 'city' | 'province' | 'bio' >;
 
 /**
  * Fetches a user profile by their ID.
@@ -16,7 +16,8 @@ export const getProfileById = async (
 ): Promise<Profile | null> => {
   const { data, error } = await supabase
     .from('profiles')
-    .select('*')
+    // Reverting back to select('*') as the 406 error was due to missing row, not column selection.
+    .select('*') 
     .eq('id', userId)
     .single();
 

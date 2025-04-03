@@ -2,8 +2,10 @@ import { z } from "zod";
 
 // Esquema para el formulario de Registro
 export const signUpSchema = z.object({
+  firstName: z.string().min(1, { message: "El nombre es obligatorio." }),
+  lastName: z.string().min(1, { message: "El apellido es obligatorio." }),
   email: z.string().email({ message: "Por favor ingresa un email válido." }),
-  password: z.string().min(6, { message: "La contraseña debe tener al menos 6 caracteres." }),
+  password: z.string().min(8, { message: "La contraseña debe tener al menos 8 caracteres." }),
   confirmPassword: z.string()
 })
 // Refinar para asegurar que las contraseñas coincidan

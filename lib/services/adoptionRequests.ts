@@ -26,7 +26,7 @@ export interface MyAdoptionRequest {
     } | null; // Sigue siendo nullable
 }
 
-// Interfaz para solicitudes recibidas (SIN info del solicitante por ahora)
+// Interfaz para solicitudes recibidas (ACTUALIZADA con datos del solicitante)
 export interface ReceivedAdoptionRequest {
     id: number;
     pet_id: number;
@@ -40,6 +40,11 @@ export interface ReceivedAdoptionRequest {
         name: string;
         added_by_user_id: string; // ID del dueño (para verificación)
     } | null;
+    // Añadir datos del perfil del solicitante
+    profiles: {
+        full_name: string | null;
+        email: string | null; // Asumiendo que profiles tiene email o se relaciona con auth.users
+    } | null; 
 }
 
 // Definición de estados válidos para las solicitudes de adopción
@@ -169,7 +174,7 @@ export async function getReceivedAdoptionRequests(ownerUserId: string): Promise<
         return [];
     }
 
-    // Tipo esperado
+    // Tipo esperado (mantener profiles por ahora, será null)
     type SupabaseReceivedData = {
         id: number;
         pet_id: number;
@@ -179,9 +184,10 @@ export async function getReceivedAdoptionRequests(ownerUserId: string): Promise<
         notes: string | null;
         updated_at: string;
         pets: { id: number; name: string; added_by_user_id: string; } | null;
+        profiles: { full_name: string | null; email: string | null; } | null; 
     };
 
-    // Consulta sin el filtro explícito por owner en pets
+    // Consulta TEMPORALMENTE sin incluir profiles para aislar el error
     const { data, error } = await supabase
         .from('adoption_requests')
         .select(`
@@ -193,20 +199,24 @@ export async function getReceivedAdoptionRequests(ownerUserId: string): Promise<
             notes,
             updated_at,
             pets ( id, name, added_by_user_id )
+            /* TEMPORALMENTE COMENTADO:
+            , profiles:user_id ( full_name, email )
+            */
         `)
-        // NO filtramos por pets.added_by_user_id aquí. RLS determina visibilidad base.
         .order('request_date', { ascending: false })
         .returns<SupabaseReceivedData[]>();
 
     if (error) {
-        console.error(`Error fetching base received adoption requests for owner ${ownerUserId}:`, error);
-        throw new Error("No se pudieron obtener las solicitudes recibidas base.");
+        const errorMessage = error.message || "No se pudieron obtener las solicitudes recibidas base.";
+        console.error(`Error fetching base received adoption requests (without profiles) for owner ${ownerUserId}:`, JSON.stringify(error) === '{}' ? '(Empty error object)' : error);
+        // Dejar el mensaje de error original si falla incluso sin profiles
+        throw new Error(errorMessage);
     }
 
     const allVisibleRequests = data || [];
-    console.log(`[${ownerUserId}] RLS visible requests:`, allVisibleRequests.length);
+    console.log(`[${ownerUserId}] RLS visible requests (without profiles):`, allVisibleRequests.length);
 
-    // Mapeo inicial
+    // Mapeo: profiles será null porque no lo pedimos
     const mappedData: ReceivedAdoptionRequest[] = allVisibleRequests.map(req => ({
         id: req.id,
         pet_id: req.pet_id,
@@ -216,11 +226,11 @@ export async function getReceivedAdoptionRequests(ownerUserId: string): Promise<
         notes: req.notes,
         updated_at: req.updated_at,
         pets: req.pets ? { id: req.pets.id, name: req.pets.name, added_by_user_id: req.pets.added_by_user_id } : null,
+        profiles: null, // Forzado a null ya que no lo estamos seleccionando
     }));
 
-    // Filtrado explícito en JavaScript para asegurar que solo queden las RECIBIDAS
     const filteredData = mappedData.filter(req => req.pets?.added_by_user_id === ownerUserId);
-    console.log(`[${ownerUserId}] Filtered received requests:`, filteredData.length);
+    console.log(`[${ownerUserId}] Filtered received requests (without profiles):`, filteredData.length);
 
     return filteredData;
 }

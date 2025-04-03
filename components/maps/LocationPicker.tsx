@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useCallback, useMemo, useEffect, useRef } from 'react';
-import { GoogleMap, useJsApiLoader, MarkerF } from '@react-google-maps/api';
+import { GoogleMap, MarkerF } from '@react-google-maps/api';
 import { Loader2, Search, X } from 'lucide-react';
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -35,8 +35,6 @@ const defaultCenterCoords = {
   lng: -58.3816,
 };
 const defaultHeight = '300px';
-
-const googleMapsLibraries: ('places')[] = ['places'];
 
 interface LocationPickerInnerProps extends LocationPickerProps {
   // No necesita props adicionales por ahora, pero las hereda
@@ -135,7 +133,7 @@ function LocationPickerInner({
 
   if (!ready) {
     return (
-      <div style={{ ...mapContainerStyle, height: mapHeight }} className="flex items-center justify-center bg-muted">
+      <div style={{ ...mapContainerStyle, height: mapHeight }} className="flex items-center justify-center bg-muted rounded-md">
         <Loader2 className="h-8 w-8 animate-spin text-primary" />
         <span className="ml-2">Inicializando búsqueda de lugares...</span>
       </div>
@@ -159,7 +157,10 @@ function LocationPickerInner({
             variant="ghost"
             size="sm"
             className="absolute right-1 top-1/2 -translate-y-1/2 h-7 w-7 p-0 text-muted-foreground hover:text-foreground"
-            onClick={() => setValue('')}
+            onClick={() => {
+              setValue('');
+              clearSuggestions();
+            }}
             aria-label="Limpiar búsqueda"
           >
             <X className="h-4 w-4" />
@@ -211,29 +212,5 @@ function LocationPickerInner({
 }
 
 export function LocationPicker(props: LocationPickerProps) {
-  const { isLoaded, loadError } = useJsApiLoader({
-    googleMapsApiKey: process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY || '',
-    libraries: googleMapsLibraries,
-  });
-
-  const mapHeight = props.mapHeight || defaultHeight;
-  const mapContainerStyle = useMemo(() => ({
-    ...mapContainerBaseStyle,
-    height: mapHeight,
-  }), [mapHeight]);
-
-  if (loadError) {
-    return <div className="text-destructive p-4 text-center">Error al cargar API de Google Maps: {loadError.message}</div>;
-  }
-
-  if (!isLoaded) {
-    return (
-      <div style={mapContainerStyle} className="flex items-center justify-center bg-muted">
-        <Loader2 className="h-8 w-8 animate-spin text-primary" />
-        <span className="ml-2">Cargando API de Google Maps...</span>
-      </div>
-    );
-  }
-
   return <LocationPickerInner {...props} />;
 }

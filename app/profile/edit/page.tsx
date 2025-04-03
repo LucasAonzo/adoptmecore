@@ -24,15 +24,17 @@ import { toast } from "sonner";
 
 // Zod schema for profile form validation
 const profileFormSchema = z.object({
-  full_name: z.string().min(2, {
-    message: "El nombre completo debe tener al menos 2 caracteres.",
-  }).max(100).optional().or(z.literal('')), // Allow empty string or optional
+  firstName: z.string().min(2, "El nombre debe tener al menos 2 caracteres.").max(50, "El nombre no puede exceder los 50 caracteres."),
+  lastName: z.string().min(2, "El apellido debe tener al menos 2 caracteres.").max(50, "El apellido no puede exceder los 50 caracteres."),
   username: z.string().min(3, {
     message: "El nombre de usuario debe tener al menos 3 caracteres.",
   }).max(50).regex(/^[a-zA-Z0-9_]+$/, {
       message: "Solo letras, números y guión bajo."
   }).optional().or(z.literal('')),
-  // avatar_url: z.string().url({ message: "Por favor ingresa una URL válida." }).optional().or(z.literal('')),
+  phone_number: z.string().optional().or(z.literal('')),
+  city: z.string().optional().or(z.literal('')),
+  province: z.string().optional().or(z.literal('')),
+  bio: z.string().max(500, "La biografía no puede exceder los 500 caracteres.").optional().or(z.literal('')),
 });
 
 type ProfileFormValues = z.infer<typeof profileFormSchema>;
@@ -83,9 +85,13 @@ export default function EditProfilePage() {
   const form = useForm<ProfileFormValues>({
     resolver: zodResolver(profileFormSchema),
     defaultValues: {
-      full_name: '', // Initialize empty
+      firstName: '',
+      lastName: '',
       username: '',
-      // avatar_url: '',
+      phone_number: '',
+      city: '',
+      province: '',
+      bio: '',
     },
     mode: 'onChange',
   });
@@ -93,10 +99,15 @@ export default function EditProfilePage() {
   // Populate form with fetched profile data once available
   useEffect(() => {
     if (profile) {
+      console.log("Populating form with profile data:", JSON.stringify(profile, null, 2)); 
       form.reset({
-        full_name: profile.full_name ?? '',
+        firstName: profile.first_name ?? '',
+        lastName: profile.last_name ?? '',
         username: profile.username ?? '',
-        // avatar_url: profile.avatar_url ?? '',
+        phone_number: profile.phone_number ?? '',
+        city: profile.city ?? '',
+        province: profile.province ?? '',
+        bio: profile.bio ?? '',
       });
     }
   }, [profile, form.reset]);
@@ -105,8 +116,13 @@ export default function EditProfilePage() {
   function onSubmit(values: ProfileFormValues) {
     console.log("Form submitted:", values);
     const payload: UpdateProfilePayload = {
-        full_name: values.full_name || null,
+        first_name: values.firstName,
+        last_name: values.lastName,
         username: values.username || null,
+        phone_number: values.phone_number || null,
+        city: values.city || null,
+        province: values.province || null,
+        bio: values.bio || null,
         avatar_url: profile?.avatar_url === undefined ? null : profile?.avatar_url,
     };
     updateProfileMutate(payload);
@@ -133,22 +149,34 @@ export default function EditProfilePage() {
       
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
-          <FormField
-            control={form.control}
-            name="full_name"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Nombre Completo</FormLabel>
-                <FormControl>
-                  <Input placeholder="Ej: Juan Perez" {...field} />
-                </FormControl>
-                <FormDescription>
-                  Tu nombre como quieres que aparezca.
-                </FormDescription>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+             <FormField
+                control={form.control}
+                name="firstName"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Nombre</FormLabel>
+                    <FormControl>
+                      <Input placeholder="Tu nombre" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="lastName"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Apellido</FormLabel>
+                    <FormControl>
+                      <Input placeholder="Tu apellido" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+          </div>
           <FormField
             control={form.control}
             name="username"
@@ -159,16 +187,78 @@ export default function EditProfilePage() {
                   <Input placeholder="Ej: juanperez99" {...field} />
                 </FormControl>
                 <FormDescription>
-                  Un nombre único para identificarte (letras, números, _).
+                  Un nombre único (letras, números, _). No uses tu email.
                 </FormDescription>
                 <FormMessage />
               </FormItem>
             )}
           />
-          {/* Add Avatar URL field later if needed */}
+          <FormField
+            control={form.control}
+            name="phone_number"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Teléfono (Opcional)</FormLabel>
+                <FormControl>
+                  <Input placeholder="Ej: +54 9 11 12345678" {...field} value={field.value ?? ''} />
+                </FormControl>
+                 <FormMessage />
+              </FormItem>
+            )}
+          />
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+             <FormField
+                control={form.control}
+                name="city"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Ciudad (Opcional)</FormLabel>
+                    <FormControl>
+                       <Input placeholder="Ej: Buenos Aires" {...field} value={field.value ?? ''} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="province"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Provincia/Estado (Opcional)</FormLabel>
+                    <FormControl>
+                      <Input placeholder="Ej: CABA" {...field} value={field.value ?? ''} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+           </div>
+            <FormField
+              control={form.control}
+              name="bio"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Biografía (Opcional)</FormLabel>
+                  <FormControl>
+                    <textarea
+                      placeholder="Cuéntanos un poco sobre ti..."
+                      {...field}
+                      value={field.value ?? ''}
+                      rows={4}
+                      className="flex min-h-[80px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                    />
+                  </FormControl>
+                   <FormDescription>
+                    Máximo 500 caracteres.
+                  </FormDescription>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
 
           <Button type="submit" disabled={isUpdatingProfile || !form.formState.isDirty}>
-            {isUpdatingProfile && <Loader2 className="mr-2 h-4 w-4 animate-spin" />} 
+            {isUpdatingProfile && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
             Guardar Cambios
           </Button>
         </form>
