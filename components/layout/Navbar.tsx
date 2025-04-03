@@ -39,9 +39,10 @@ const userMenuLinks = [
 
 export default function Navbar() {
     const router = useRouter();
-    const { user, session, isLoading, supabase } = useAuth();
+    const { user, session, isLoading, supabase, hasGloballyUnread } = useAuth();
     const [isSheetOpen, setIsSheetOpen] = useState(false);
     const pathname = usePathname();
+    console.log("[Navbar] AuthContext -> hasGloballyUnread:", hasGloballyUnread);
 
     const handleLogout = async () => {
         setIsSheetOpen(false); // Cerrar sheet si está abierto
@@ -89,11 +90,18 @@ export default function Navbar() {
                         <Link
                             href="/my-chats"
                             className={cn(
-                                "text-sm font-medium transition-colors hover:text-white/80",
+                                "relative text-sm font-medium transition-colors hover:text-white/80",
                                 pathname === '/my-chats' ? "text-white font-semibold" : "text-white/70"
                             )}
                         >
                             Mis Chats
+                            {/* Use hasGloballyUnread from context */}
+                            {hasGloballyUnread && (
+                                <span className="absolute top-0 right-0 -mt-1 -mr-1 flex h-2.5 w-2.5">
+                                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
+                                  <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-red-500"></span>
+                                </span>
+                            )}
                         </Link>
                     )}
                     {!isLoading && user && (
@@ -198,9 +206,16 @@ export default function Navbar() {
                              {user && <div className="border-t border-primary-foreground/20 pt-4 mt-4 space-y-3"> { /* Separador visual */} 
                                 {/* Added My Chats link for mobile */} 
                                 <SheetClose asChild>
-                                     <Link href="/my-chats" className="flex items-center text-lg font-medium text-primary-foreground/70 transition-colors hover:text-primary-foreground">
+                                     <Link href="/my-chats" className="relative flex items-center text-lg font-medium text-primary-foreground/70 transition-colors hover:text-primary-foreground">
                                          <MessageSquare className="mr-3 h-5 w-5" /> 
                                          Mis Chats
+                                        {/* Use hasGloballyUnread from context */}
+                                        {hasGloballyUnread && (
+                                            <span className="absolute top-1 right-1 flex h-2.5 w-2.5">
+                                                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
+                                                <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-red-500"></span>
+                                            </span>
+                                        )}
                                      </Link>
                                  </SheetClose>
                                  {/* Add Edit Profile Link for Mobile Here */}

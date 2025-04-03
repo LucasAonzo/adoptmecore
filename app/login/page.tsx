@@ -36,6 +36,7 @@ export default function LoginPage() {
       email: "",
       password: "",
     },
+    mode: 'onBlur'
   });
 
   // 2. Definir el handler para el submit

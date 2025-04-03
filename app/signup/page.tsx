@@ -40,6 +40,7 @@ export default function SignUpPage() {
       password: "",
       confirmPassword: "",
     },
+    mode: 'onBlur'
   });
 
   // 2. Definir el handler para el submit
@@ -82,21 +83,23 @@ export default function SignUpPage() {
 
         // Éxito completo (Auth + Profile)
         toast.success("¡Cuenta creada con éxito!", {
-          description: "Revisa tu email para confirmar si es necesario. Serás redirigido.",
-          duration: 5000,
+          description: "Revisa tu email si es necesario verificarla. Serás redirigido a la página principal.",
+          duration: 4000, // Reduced duration slightly
         });
-        // Redirigir a login o a una página de bienvenida/perfil
-        setTimeout(() => router.push('/login'), 5000);
+        // Redirigir a la página principal
+        router.push('/');
+        router.refresh(); // Refresh layout/auth state
 
       } catch (profileError: any) {
         // Capturar error específico de la creación del perfil
         // El usuario Auth ya existe, pero el perfil falló
         toast.error("Error al guardar datos del perfil", {
-          description: profileError.message || "Tu cuenta fue creada pero hubo un problema al guardar tus datos. Por favor, edita tu perfil más tarde.",
+          description: profileError.message || "Tu cuenta fue creada pero hubo un problema al guardar tus datos. Por favor, edita tu perfil más tarde. Serás redirigido a la página principal.",
           duration: 7000
         });
-        // Redirigir a login de todas formas?
-        setTimeout(() => router.push('/login'), 7000);
+        // Redirigir a la página principal de todas formas
+        router.push('/');
+        router.refresh(); // Refresh layout/auth state
       }
 
     } catch (authError: any) {
@@ -111,11 +114,11 @@ export default function SignUpPage() {
   }
 
   return (
-    <div className="flex justify-center items-center min-h-screen p-4">
-      <div className="w-full max-w-md">
-        <h2 className="text-2xl font-semibold text-center mb-6">Crear Cuenta</h2>
+    <div className="flex items-center justify-center min-h-screen bg-muted/40 px-4">
+      <div className="max-w-md w-full bg-background p-8 rounded-lg shadow-lg">
+        <h2 className="text-2xl font-bold text-center mb-6">Crear Cuenta</h2>
         <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
+          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <FormField
                 control={form.control}
@@ -193,13 +196,12 @@ export default function SignUpPage() {
               {loading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null} 
               {loading ? "Creando..." : "Crear Cuenta"}
             </Button>
-             {/* Opcional: Añadir link a la página de login */}
-             <p className="text-center text-sm text-gray-600">
-              ¿Ya tienes cuenta?{" "}
-              <Link href="/login" className="font-medium text-indigo-600 hover:text-indigo-500">
-                Inicia Sesión
-              </Link>
-            </p>
+            <p className="mt-4 text-center text-sm text-muted-foreground">
+             ¿Ya tienes cuenta?{" "}
+             <Link href="/login" className="underline hover:text-primary">
+               Inicia Sesión
+             </Link>
+           </p>
           </form>
         </Form>
       </div>

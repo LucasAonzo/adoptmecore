@@ -22,7 +22,8 @@ import { useRealtimeChat } from '@/hooks/use-realtime-chat'; // --- UNCOMMENTED
 export default function ChatPage() {
   const params = useParams();
   const conversationId = params?.conversationId as string;
-  const { supabase, user, isLoading: isAuthLoading } = useAuth();
+  const { supabase, user, isLoading: isAuthLoading, triggerGlobalUnreadCheck } = useAuth();
+  const queryClient = useQueryClient();
   const [processedMessageIds, setProcessedMessageIds] = useState(new Set<string>());
   const [inputValue, setInputValue] = useState('');
   const scrollRef = useRef<HTMLDivElement>(null);
@@ -39,6 +40,36 @@ export default function ChatPage() {
     username: user?.email || 'Anon',
     userId: user?.id,
   });
+
+  // --- Effect to mark conversation as read ---
+  useEffect(() => {
+    if (supabase && conversationId) {
+      const markAsRead = async () => {
+        try {
+          const { error } = await supabase.rpc('update_last_read_timestamp', {
+            p_conversation_id: conversationId 
+          });
+          if (error) {
+            console.error('Error marking conversation as read:', error);
+          } else {
+            console.log('Successfully marked conversation as read, invalidating/refetching queries and triggering global check...');
+            // Invalidate and refetch list/count
+            queryClient.invalidateQueries({ queryKey: ['myConversations'] });
+            queryClient.refetchQueries({ queryKey: ['myConversations'], exact: true });
+            queryClient.invalidateQueries({ queryKey: ['hasUnreadChats'] }); 
+            queryClient.refetchQueries({ queryKey: ['hasUnreadChats'], exact: true });
+            // --- Trigger the global check in AuthProvider --- 
+            triggerGlobalUnreadCheck();
+            // ---------------------------------------------
+          }
+        } catch (err) {
+          console.error('Client-side error calling mark as read RPC:', err);
+        }
+      };
+      
+      markAsRead();
+    }
+  }, [supabase, conversationId, queryClient, triggerGlobalUnreadCheck]);
 
   // --- UNCOMMENTED: Combined messages logic ---
   const combinedMessages = useMemo(() => {
@@ -63,30 +94,31 @@ export default function ChatPage() {
   }, [combinedMessages]);
 
   const handleSaveMessage = useCallback((lastMessage: ChatMessage | null) => {
-    // Logic remains the same
-    if (lastMessage && user?.id && !processedMessageIds.has(lastMessage.id)) {
-      console.log('Intentando guardar mensaje con ID:', lastMessage.id);
+    // Only save if:
+    // 1. lastMessage exists
+    // 2. current user ID exists
+    // 3. The message senderId MATCHES the current user ID
+    // 4. The message ID hasn't been processed yet
+    if (lastMessage && user?.id && lastMessage.senderId === user.id && !processedMessageIds.has(lastMessage.id)) {
+      console.log('Guardando mi propio mensaje con ID:', lastMessage.id, 'Sender:', lastMessage.senderId);
       setProcessedMessageIds(prev => new Set(prev).add(lastMessage.id));
       
       const messageInput: SaveMessageInput = {
         content: lastMessage.content,
         conversation_id: conversationId,
-        sender_user_id: user.id 
+        sender_user_id: user.id // Correct: Save with my ID because I am the sender
       };
 
       saveMessage(messageInput, { 
         onError: (err) => {
-          // Log the actual error object
           console.error('Error detallado al guardar mensaje:', err);
-          // --- NO eliminar el ID en caso de error para evitar el bucle ---
-          // setProcessedMessageIds(prev => {
-          //   const newSet = new Set(prev);
-          //   newSet.delete(lastMessage.id);
-          //   return newSet;
-          // });
-          // --------------------------------------------------------------
         }
       });
+    } else if (lastMessage && user?.id && lastMessage.senderId !== user.id && !processedMessageIds.has(lastMessage.id)) {
+      // Message received from another user: Do nothing (don't save to DB from the receiver's side)
+      console.log('Mensaje recibido de otro usuario, no guardando:', lastMessage.id, 'Sender:', lastMessage.senderId);
+      // Optionally mark as processed to prevent any potential future processing if needed
+       setProcessedMessageIds(prev => new Set(prev).add(lastMessage.id));
     }
   }, [conversationId, saveMessage, user?.id, processedMessageIds]);
 
@@ -124,9 +156,8 @@ export default function ChatPage() {
   // ---------------------
 
   // Handle loading and error states
-  if (isAuthLoading) {
-    return <div className="flex justify-center items-center h-full"><Loader2 className="h-8 w-8 animate-spin" /></div>;
-  }
+  // Consider both auth loading and message loading
+  const isStillLoading = isAuthLoading || isLoadingMessages;
 
   if (!conversationId) {
     notFound();
@@ -142,15 +173,21 @@ export default function ChatPage() {
     // Main container: flex-col, height defined by parent (main with flex-1)
     <div className="flex flex-col h-full bg-gray-100"> 
       {/* Messages Area: Takes available space, scrolls internally */}
-      {/* Removed p-4/md:p-6, add padding inside RealtimeChat if needed */}
       <div ref={scrollRef} className="flex-1 overflow-y-auto min-h-0"> 
-        <RealtimeChat
-          messages={combinedMessages}
-          isLoading={isLoadingMessages} 
-          currentUserId={user?.id} 
-          // Pass ref if useChatScroll needs it (check hook definition)
-          // scrollRef={scrollRef} 
-        />
+        {/* Conditionally render RealtimeChat only when user ID is available */}
+        {isStillLoading ? (
+          <div className="flex justify-center items-center h-full">
+            <Loader2 className="h-8 w-8 animate-spin" />
+          </div>
+        ) : user?.id ? (
+          <RealtimeChat
+            messages={combinedMessages}
+            isLoading={false} // isLoadingMessages is handled above
+            currentUserId={user.id} // Pass guaranteed user.id
+          />
+        ) : (
+          <div className="p-4 text-red-600">Error: No se pudo identificar al usuario.</div>
+        )}
       </div>
 
       {/* Input Area: Fixed height, does not shrink */}

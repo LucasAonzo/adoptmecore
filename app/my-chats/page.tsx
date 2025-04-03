@@ -51,9 +51,14 @@ export default function MyChatsPage() {
                   </Avatar>
                   <div className="flex-1">
                     <CardTitle className="text-lg leading-tight">Chat sobre: {convo.petName ?? 'Mascota Desconocida'}</CardTitle>
-                    <p className="text-sm text-muted-foreground mt-1">
-                      Con: {convo.otherParticipantName}
-                    </p>
+                    <div className="flex items-center mt-1">
+                      <p className="text-sm text-muted-foreground">
+                        Con: {convo.otherParticipantName}
+                      </p>
+                      {convo.hasUnread && (
+                        <div className="ml-2 h-2.5 w-2.5 rounded-full bg-red-500" title="Mensajes no leídos"></div>
+                      )}
+                    </div>
                   </div>
                 </CardHeader>
               </Card>

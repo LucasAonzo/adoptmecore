@@ -9,6 +9,7 @@ export interface ConversationPreview {
   petImageUrl: string | null;
   otherParticipantId: string;
   otherParticipantName: string | null;
+  hasUnread: boolean; // Flag for unread messages
 }
 
 /**
@@ -92,17 +93,62 @@ export const getMyConversations = async (
       }
   });
 
-  // 6. Fetch Profiles data (full_name, username)
+  // 6. Fetch Profiles data (first_name, last_name, username)
   const { data: profilesData, error: profilesError } = await supabase
       .from('profiles')
-      .select('id, full_name, username') // Select full_name and username
+      // Select first_name and last_name instead of full_name
+      .select('id, first_name, last_name, username') 
       .in('id', uniqueParticipantIds);
   
   if (profilesError) {
-      console.error("Error fetching profiles data:", profilesError);
-      // Handle error, maybe return without names or throw
+      console.error("Error fetching profiles data:", JSON.stringify(profilesError, null, 2)); 
   }
-  const profilesMap = new Map(profilesData?.map(p => [p.id, { fullName: p.full_name, username: p.username }]) ?? []);
+  // --> Log fetched profiles data
+  console.log("[getMyConversations] Fetched profilesData:", JSON.stringify(profilesData, null, 2));
+
+  const profilesMap = new Map(
+      profilesData?.map(p => [
+          p.id, 
+          { 
+              firstName: p.first_name, 
+              lastName: p.last_name, 
+              username: p.username 
+          }
+      ]) ?? []
+  );
+  // --> Log the created profilesMap
+  console.log("[getMyConversations] Created profilesMap:", profilesMap);
+
+  // --> ADDED STEP: Fetch last read status for current user
+  const { data: readStatuses, error: readStatusError } = await supabase
+      .from('participant_read_status')
+      .select('conversation_id, last_read_at')
+      .eq('user_id', currentUserId)
+      .in('conversation_id', conversationIds);
+
+  if (readStatusError) console.error("Error fetching read statuses:", readStatusError);
+  const readStatusMap = new Map(readStatuses?.map(rs => [rs.conversation_id, rs.last_read_at]) ?? []);
+  console.log("[getMyConversations] Read status map:", readStatusMap);
+
+  // --> ADDED STEP: Fetch last message timestamp for each conversation (sent by others)
+  const { data: lastMessages, error: lastMessagesError } = await supabase
+      .from('messages')
+      .select('conversation_id, created_at')
+      .in('conversation_id', conversationIds)
+      .neq('sender_user_id', currentUserId) // Only messages sent by others
+      .order('created_at', { ascending: false }); // Order to easily get the latest
+      // Note: This fetches potentially many messages, we only need the latest per convo.
+      // A more optimized query might use window functions or subqueries if performance becomes an issue.
+
+  if (lastMessagesError) console.error("Error fetching last messages:", lastMessagesError);
+  // Create a map of the latest message timestamp per conversation
+  const lastMessageTimestampMap = new Map<string, string>();
+  lastMessages?.forEach(msg => {
+      if (!lastMessageTimestampMap.has(msg.conversation_id)) { // Only store the first (latest) encountered
+          lastMessageTimestampMap.set(msg.conversation_id, msg.created_at);
+      }
+  });
+  console.log("[getMyConversations] Last message timestamp map:", lastMessageTimestampMap);
 
   // 7. Combine everything
   // Map conversations to potential previews (including nulls)
@@ -117,9 +163,31 @@ export const getMyConversations = async (
       const petInfo = petsMap.get(convo.pet_id);
       const petImageUrl = petImageMap.get(convo.pet_id) ?? null;
       const otherParticipantProfile = profilesMap.get(otherParticipantEntry.user_id);
+      // --> Log the retrieved other participant profile
+      console.log(`[getMyConversations] Convo ${convo.id} - Other User ${otherParticipantEntry.user_id} - Profile from Map:`, JSON.stringify(otherParticipantProfile, null, 2));
       
-      const otherParticipantName = otherParticipantProfile?.fullName || otherParticipantProfile?.username || 'Usuario Desconocido';
+      let constructedName = 'Usuario Desconocido';
+      if (otherParticipantProfile?.firstName) {
+          constructedName = `${otherParticipantProfile.firstName}${otherParticipantProfile.lastName ? ' ' + otherParticipantProfile.lastName : ''}`;
+      } else if (otherParticipantProfile?.username) {
+          constructedName = otherParticipantProfile.username; // Fallback to username if no first name
+      }
+      const otherParticipantName = constructedName;
+      // --> Log the constructed name
+      console.log(`[getMyConversations] Convo ${convo.id} - Constructed Name:`, otherParticipantName);
       
+      // --> ADDED: Determine unread status
+      const lastReadTimestamp = readStatusMap.get(convo.id);
+      const lastMessageTimestamp = lastMessageTimestampMap.get(convo.id);
+      let hasUnread = false;
+      if (lastMessageTimestamp) { // If there is a message from the other user
+          if (!lastReadTimestamp || new Date(lastMessageTimestamp) > new Date(lastReadTimestamp)) {
+              // If user hasn't read this convo before OR last message is newer than last read
+              hasUnread = true;
+          }
+      }
+      console.log(`[getMyConversations] Convo ${convo.id} - LastRead: ${lastReadTimestamp}, LastMsg: ${lastMessageTimestamp}, HasUnread: ${hasUnread}`);
+
       // Create the object matching ConversationPreview type exactly
       const preview: ConversationPreview = {
           conversationId: convo.id,
@@ -128,6 +196,7 @@ export const getMyConversations = async (
           petImageUrl: petImageUrl,
           otherParticipantId: otherParticipantEntry.user_id,
           otherParticipantName: otherParticipantName,
+          hasUnread: hasUnread, // Add the flag
       };
       return preview;
   });

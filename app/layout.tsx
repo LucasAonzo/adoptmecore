@@ -21,15 +21,15 @@ export default function RootLayout({
   return (
     <html lang="es">
       <body className={`${inter.className} flex flex-col h-screen`}>
-        <AuthProvider>
-          <ReactQueryProvider>
+        <ReactQueryProvider>
+          <AuthProvider>
             <Navbar />
             <main className="flex-1">
               {children}
             </main>
             <Toaster />
-          </ReactQueryProvider>
-        </AuthProvider>
+          </AuthProvider>
+        </ReactQueryProvider>
       </body>
     </html>
   );

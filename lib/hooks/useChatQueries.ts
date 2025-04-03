@@ -81,7 +81,35 @@ export const useMyConversationsQuery = (
       return getMyConversations(supabase); // Llama a la función del servicio
     },
     enabled: !!supabase, // Solo ejecutar si supabase está disponible
-    staleTime: 1000 * 60 * 5, // Cache por 5 minutos
+    // staleTime: 1000 * 60 * 5, // Cache por 5 minutos
+    staleTime: 0, // <-- Considerar datos obsoletos inmediatamente al montar
+  });
+};
+
+// --- Hook useHasUnreadChats ---
+/**
+ * Hook to efficiently check if the current user has any unread chat messages.
+ */
+export const useHasUnreadChats = (
+  supabase: SupabaseClient<Database> | null
+) => {
+  return useQuery<boolean, Error>({ // Returns a boolean
+    queryKey: ['hasUnreadChats'], // Unique query key
+    queryFn: async () => {
+      console.log("[useHasUnreadChats] queryFn executing...");
+      if (!supabase) {
+        console.warn("useHasUnreadChats: Supabase client not available.");
+        return false; 
+      }
+      const conversations = await getMyConversations(supabase);
+      console.log("[useHasUnreadChats] Fetched conversations:", conversations);
+      const hasAnyUnread = conversations.some(convo => convo.hasUnread);
+      console.log("[useHasUnreadChats] Result (hasAnyUnread):", hasAnyUnread);
+      return hasAnyUnread;
+    },
+    enabled: !!supabase, // Only run if supabase is available
+    staleTime: 1000 * 60 * 1, // Check for unread status more frequently, e.g., every 1 minute
+    refetchInterval: 1000 * 60 * 2, // Optional: Refetch periodically in background (e.g., every 2 mins)
   });
 };
 

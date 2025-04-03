@@ -1,15 +1,20 @@
 'use client';
 
-import React, { createContext, useState, useEffect, useContext, ReactNode } from 'react';
+import React, { createContext, useState, useEffect, useContext, ReactNode, useCallback } from 'react';
 import { createClient } from '@/lib/supabaseClient';
 import type { Session, SupabaseClient, User } from '@supabase/supabase-js';
+import { RealtimeChannel } from '@supabase/supabase-js';
+import { useQueryClient } from '@tanstack/react-query';
+import { getMyConversations, type ConversationPreview } from '@/lib/services/chat';
+import { Database } from '@/lib/database.types';
 
 interface AuthContextType {
-    supabase: SupabaseClient;
+    supabase: SupabaseClient<Database>;
     session: Session | null;
     user: User | null;
     isLoading: boolean;
-    // Podríamos añadir funciones login/logout aquí, pero por ahora mantenemos la lógica en las páginas
+    hasGloballyUnread: boolean;
+    triggerGlobalUnreadCheck: () => void;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -19,25 +24,41 @@ interface AuthProviderProps {
 }
 
 export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
-    const supabase = createClient();
+    const supabase = createClient() as SupabaseClient<Database>;
     const [session, setSession] = useState<Session | null>(null);
     const [user, setUser] = useState<User | null>(null);
     const [isLoading, setIsLoading] = useState(true);
+    const [hasGloballyUnread, setHasGloballyUnread] = useState(false);
+    const queryClient = useQueryClient();
+
+    const checkAndUpdateUnreadStatus = useCallback(async () => {
+        const currentSupabase = supabase;
+        const currentUser = user;
+        if (currentSupabase && currentUser) {
+            try {
+                const conversations: ConversationPreview[] = await getMyConversations(currentSupabase);
+                const anyUnread: boolean = conversations.some((convo: ConversationPreview) => convo.hasUnread);
+                console.log("[AuthProvider Check Triggered] hasUnread:", anyUnread);
+                setHasGloballyUnread(anyUnread);
+            } catch (error) {
+                console.error("[AuthProvider Check Triggered] Error fetching conversations:", error);
+            }
+        }
+    }, [supabase, user]);
 
     useEffect(() => {
         let mounted = true;
 
         async function getInitialSession() {
             try {
-                const { data: { session }, error } = await supabase.auth.getSession();
+                const { data: { session: initialSession }, error } = await supabase.auth.getSession();
                 if (error) {
                     console.error('AuthProvider: Error getting initial session:', error.message);
                     throw error;
                 }
-                // Solo actualizar si el componente sigue montado
                 if (mounted) {
-                    setSession(session);
-                    setUser(session?.user ?? null);
+                    setSession(initialSession);
+                    setUser(initialSession?.user ?? null);
                 }
             } catch (error) {
                  console.error('AuthProvider: Failed to get initial session', error);
@@ -54,29 +75,76 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
         getInitialSession();
 
-        const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
-            // No necesitamos verificar si está montado aquí, ya que la suscripción se limpia
-            console.log('AuthProvider: Auth state changed', _event, !!session);
-            setSession(session);
-            setUser(session?.user ?? null);
-            // Podríamos resetear el estado de carga aquí si fuera necesario,
-            // pero usualmente solo importa la carga inicial.
-             if (isLoading) setIsLoading(false); // Asegurarse de que no nos quedemos cargando si la sesión inicial tarda
+        const { data: { subscription: authSubscription } } = supabase.auth.onAuthStateChange((_event, currentSession) => {
+            console.log('AuthProvider: Auth state changed', _event, !!currentSession);
+            setSession(currentSession);
+            setUser(currentSession?.user ?? null);
+            if (isLoading && mounted) setIsLoading(false);
         });
 
-        // Limpiar suscripción y flag de montaje al desmontar
         return () => {
             mounted = false;
-            subscription?.unsubscribe();
+            authSubscription?.unsubscribe();
         };
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, []); // Ejecutar solo una vez al montar, supabase client es estable
+    }, [supabase, isLoading]);
 
-    const value = {
+    useEffect(() => {
+        let messageChannel: RealtimeChannel | null = null;
+
+        if (supabase && user) {
+            console.log(`[AuthProvider] Subscribing to messages for user: ${user.id}`);
+            messageChannel = supabase
+                .channel('public:messages')
+                .on(
+                    'postgres_changes',
+                    { event: 'INSERT', schema: 'public', table: 'messages' },
+                    (payload) => {
+                        console.log('[AuthProvider] New message received:', payload);
+                        const newMessage = payload.new as { sender_user_id?: string };
+
+                        if (newMessage.sender_user_id && newMessage.sender_user_id !== user.id) {
+                            console.log(`[AuthProvider] Message from other user. Setting global flag TRUE & triggering refetch.`);
+                            setHasGloballyUnread(true);
+                            queryClient.invalidateQueries({ queryKey: ['myConversations'] });
+                            queryClient.refetchQueries({
+                                queryKey: ['myConversations'], 
+                                exact: true,
+                                type: 'all'
+                            });
+                            console.log(`[AuthProvider] Refetch triggered for myConversations (type: all).`);
+                        }
+                    }
+                )
+                .subscribe();
+                
+             console.log("[AuthProvider] Subscribed to message channel.");
+        }
+
+        return () => {
+            if (messageChannel) {
+                console.log("[AuthProvider] Unsubscribing from message channel.");
+                supabase.removeChannel(messageChannel).catch(error => {
+                   console.error("[AuthProvider] Error removing message channel:", error);
+                });
+            }
+        };
+    }, [supabase, user, queryClient]);
+
+    useEffect(() => {
+        checkAndUpdateUnreadStatus();
+        
+        const intervalId = setInterval(checkAndUpdateUnreadStatus, 1000 * 60 * 2);
+
+        return () => clearInterval(intervalId);
+    }, [checkAndUpdateUnreadStatus]);
+
+    const value: AuthContextType = {
         supabase,
         session,
         user,
         isLoading,
+        hasGloballyUnread,
+        triggerGlobalUnreadCheck: checkAndUpdateUnreadStatus,
     };
 
     return (
