@@ -144,126 +144,125 @@ export default function EditProfilePage() {
   }
 
   return (
-    <div className="container mx-auto p-4 md:p-6 max-w-2xl">
-      <h1 className="text-3xl font-bold mb-6">Editar Perfil</h1>
-      
-      <Form {...form}>
-        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-             <FormField
+    <div className="container mx-auto px-4 py-8 md:py-12 font-body">
+      <div className="max-w-2xl mx-auto">
+        <h1 className="text-3xl font-heading font-bold mb-8 text-center text-foreground">Editar Perfil</h1>
+        
+        <div className="bg-card p-6 md:p-8 rounded-lg shadow-lg border border-border">
+          <Form {...form}>
+            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                 <FormField
+                    control={form.control}
+                    name="firstName"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel className="font-body text-foreground">Nombre</FormLabel>
+                        <FormControl>
+                          <Input placeholder="Tu nombre" {...field} className="font-body" />
+                        </FormControl>
+                        <FormMessage className="font-body"/>
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={form.control}
+                    name="lastName"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel className="font-body text-foreground">Apellido</FormLabel>
+                        <FormControl>
+                          <Input placeholder="Tu apellido" {...field} className="font-body" />
+                        </FormControl>
+                        <FormMessage className="font-body"/>
+                      </FormItem>
+                    )}
+                  />
+              </div>
+              <FormField
                 control={form.control}
-                name="firstName"
+                name="username"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Nombre</FormLabel>
+                    <FormLabel className="font-body text-foreground">Nombre de Usuario</FormLabel>
                     <FormControl>
-                      <Input placeholder="Tu nombre" {...field} />
+                      <Input placeholder="Ej: juanperez99" {...field} className="font-body" />
                     </FormControl>
-                    <FormMessage />
+                    <FormDescription className="font-body text-xs">
+                      Un nombre único (letras, números, _). No uses tu email.
+                    </FormDescription>
+                    <FormMessage className="font-body"/>
                   </FormItem>
                 )}
               />
               <FormField
                 control={form.control}
-                name="lastName"
+                name="phone_number"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Apellido</FormLabel>
+                    <FormLabel className="font-body text-foreground">Teléfono (Opcional)</FormLabel>
                     <FormControl>
-                      <Input placeholder="Tu apellido" {...field} />
+                      <Input placeholder="Ej: +54 9 11 12345678" {...field} value={field.value ?? ''} className="font-body" />
                     </FormControl>
-                    <FormMessage />
+                     <FormMessage className="font-body"/>
                   </FormItem>
                 )}
               />
-          </div>
-          <FormField
-            control={form.control}
-            name="username"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Nombre de Usuario</FormLabel>
-                <FormControl>
-                  <Input placeholder="Ej: juanperez99" {...field} />
-                </FormControl>
-                <FormDescription>
-                  Un nombre único (letras, números, _). No uses tu email.
-                </FormDescription>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-          <FormField
-            control={form.control}
-            name="phone_number"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Teléfono (Opcional)</FormLabel>
-                <FormControl>
-                  <Input placeholder="Ej: +54 9 11 12345678" {...field} value={field.value ?? ''} />
-                </FormControl>
-                 <FormMessage />
-              </FormItem>
-            )}
-          />
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-             <FormField
-                control={form.control}
-                name="city"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Ciudad (Opcional)</FormLabel>
-                    <FormControl>
-                       <Input placeholder="Ej: Buenos Aires" {...field} value={field.value ?? ''} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <FormField
-                control={form.control}
-                name="province"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Provincia/Estado (Opcional)</FormLabel>
-                    <FormControl>
-                      <Input placeholder="Ej: CABA" {...field} value={field.value ?? ''} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-           </div>
-            <FormField
-              control={form.control}
-              name="bio"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Biografía (Opcional)</FormLabel>
-                  <FormControl>
-                    <textarea
-                      placeholder="Cuéntanos un poco sobre ti..."
-                      {...field}
-                      value={field.value ?? ''}
-                      rows={4}
-                      className="flex min-h-[80px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
-                    />
-                  </FormControl>
-                   <FormDescription>
-                    Máximo 500 caracteres.
-                  </FormDescription>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-          <Button type="submit" disabled={isUpdatingProfile || !form.formState.isDirty}>
-            {isUpdatingProfile && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-            Guardar Cambios
-          </Button>
-        </form>
-      </Form>
-
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                 <FormField
+                    control={form.control}
+                    name="city"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel className="font-body text-foreground">Ciudad (Opcional)</FormLabel>
+                        <FormControl>
+                           <Input placeholder="Ej: Buenos Aires" {...field} value={field.value ?? ''} className="font-body" />
+                        </FormControl>
+                        <FormMessage className="font-body"/>
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={form.control}
+                    name="province"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel className="font-body text-foreground">Provincia/Estado (Opcional)</FormLabel>
+                        <FormControl>
+                          <Input placeholder="Ej: CABA" {...field} value={field.value ?? ''} className="font-body" />
+                        </FormControl>
+                        <FormMessage className="font-body"/>
+                      </FormItem>
+                    )}
+                  />
+               </div>
+                <FormField
+                  control={form.control}
+                  name="bio"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className="font-body text-foreground">Biografía (Opcional)</FormLabel>
+                      <FormControl>
+                        <textarea
+                          placeholder="Cuéntanos un poco sobre ti..."
+                          {...field}
+                          value={field.value ?? ''}
+                          rows={4}
+                          className="flex min-h-[80px] w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 font-body"
+                        />
+                      </FormControl>
+                      <FormMessage className="font-body"/>
+                    </FormItem>
+                  )}
+                />
+              <Button type="submit" disabled={isUpdatingProfile} className="w-full font-body font-medium">
+                {isUpdatingProfile ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
+                {isUpdatingProfile ? "Guardando..." : "Guardar Cambios"}
+              </Button>
+            </form>
+          </Form>
+        </div>
+      </div>
     </div>
   );
 } 

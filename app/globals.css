@@ -5,24 +5,24 @@
 @layer base {
   :root {
     /* Colores base de la nueva paleta (HEX) */
-    --background: #fefcf9; /* neutral.white */
-    --foreground: #4a4a47; /* neutral.700 */
+    --background: #EBEBEB; /* Nuevo color gris claro */
+    --foreground: #1f2523; /* neutral.900 - Asegurar buen contraste con #EBEBEB */
     --card: #ffffff;       /* Blanco puro */
-    --card-foreground: #1f2523; /* neutral.900 - Ajustado para contraste con blanco */
+    --card-foreground: #1f2523; /* neutral.900 */
     --popover: #ffffff;    /* Blanco puro */
-    --popover-foreground: #1f2523; /* neutral.900 - Ajustado para contraste con blanco */
+    --popover-foreground: #1f2523; /* neutral.900 */
     --primary: #9b6bc3;    /* primary.500 */
     --primary-foreground: #fefcf9; /* neutral.white */
     --secondary: #f28c6e;  /* secondary.main */
     --secondary-foreground: #1f2523; /* neutral.900 */
-    --muted: #f2f0ec;     /* neutral.100 */
-    --muted-foreground: #878784; /* neutral.500 */
+    --muted: #f5f5f5;     /* Gris muy claro para muted sobre #EBEBEB */
+    --muted-foreground: #525252; /* neutral.600 o similar para contraste */
     --accent: #78c4a8;     /* accent.mint */
     --accent-foreground: #1f2523; /* neutral.900 */
     --destructive: #e07e8a; /* error.main */
     --destructive-foreground: #fefcf9; /* neutral.white */
-    --border: #e5e3de;     /* neutral.200 */
-    --input: #e5e3de;      /* neutral.200 */
+    --border: #cccccc;     /* Gris medio para bordes sobre #EBEBEB */
+    --input: #cccccc;      /* Gris medio para input borders */
     --ring: #ac82ce;       /* primary.400 */
 
     --radius: 0.5rem; /* Radio de borde preferido */
@@ -33,25 +33,25 @@
   }
 
   .dark {
-    /* Colores para modo oscuro (HEX) - AJUSTAR SEGÚN NECESIDAD Y CONTRASTE */
-    --background: #2f2f2d; /* neutral.800 */
-    --foreground: #faf9f6; /* neutral.50 */
-    --card: #1f2523;       /* neutral.900 - Negro suave para card en dark */
-    --card-foreground: #faf9f6; /* neutral.50 */
-    --popover: #1f2523; /* neutral.900 */
-    --popover-foreground: #faf9f6; /* neutral.50 */
+    /* Colores para modo oscuro (HEX) */
+    --background: #252525; /* Gris oscuro para fondo dark */
+    --foreground: #fafafa; /* Casi blanco para texto */
+    --card: #121212;       /* Negro muy oscuro para card en dark */
+    --card-foreground: #fafafa; /* Casi blanco */
+    --popover: #121212; /* Negro muy oscuro */
+    --popover-foreground: #fafafa; /* Casi blanco */
     --primary: #ac82ce;    /* primary.400 */
-    --primary-foreground: #1f2523; /* neutral.900 */
+    --primary-foreground: #121212; /* Negro muy oscuro */
     --secondary: #d9775c;  /* secondary.dark */
-    --secondary-foreground: #fefcf9; /* neutral.white */
-    --muted: #2f2f2d;     /* neutral.800 */
-    --muted-foreground: #878784; /* neutral.500 */
+    --secondary-foreground: #121212; /* Negro muy oscuro */
+    --muted: #353535;     /* Gris oscuro para muted */
+    --muted-foreground: #a3a3a3; /* Gris claro para texto muted */
     --accent: #78c4a8;     /* accent.mint */
-    --accent-foreground: #1f2523; /* neutral.900 */
+    --accent-foreground: #121212; /* Negro muy oscuro */
     --destructive: #c97079; /* error.dark */
-    --destructive-foreground: #fefcf9; /* neutral.white */
-    --border: #4a4a47;     /* neutral.700 */
-    --input: #4a4a47;      /* neutral.700 */
+    --destructive-foreground: #fafafa; /* Casi blanco */
+    --border: #404040;     /* Gris oscuro para bordes */
+    --input: #404040;      /* Gris oscuro para input borders */
     --ring: #c0a0da;       /* primary.300 */
 
     /* Mantener/ajustar variables adicionales si se usan */

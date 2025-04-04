@@ -115,9 +115,9 @@ export default function SignUpPage() {
   }
 
   return (
-    // Aplicar fuente body y usar fondo global (sin clase explícita)
+    // REMOVE bg-background explícito, rely on layout's main tag background
     <div className="flex items-center justify-center min-h-screen px-4 font-body">
-      {/* Card usa bg-card, border, shadow, etc */}
+      {/* Card usa bg-card */}
       <div className="max-w-md w-full bg-card p-8 rounded-lg shadow-lg border border-border">
         {/* Título: Aplicar fuente heading */}
         <h2 className="text-2xl font-heading font-bold text-center mb-6 text-foreground">Crear Cuenta</h2>

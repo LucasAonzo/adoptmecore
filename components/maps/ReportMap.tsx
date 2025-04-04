@@ -134,12 +134,12 @@ function MapContent({
           anchor={anchorElement}
           onCloseClick={handleInfoWindowClose}
         >
-          <div className="p-1 max-w-[220px] space-y-1">
-            <h4 className="font-semibold text-sm capitalize truncate">
+          <div className="p-2 max-w-[220px] space-y-1.5 font-body bg-card text-card-foreground rounded-md shadow-md">
+            <h4 className="font-semibold font-body text-sm capitalize truncate text-foreground">
               {selectedReport.pet_name || selectedReport.pet_type || 'Reporte'}
               <Badge
                 variant={selectedReport.report_type === 'LOST' || selectedReport.report_type === 'EMERGENCY' ? 'destructive' : 'secondary'}
-                className="ml-1.5 text-xs px-1.5 py-0.5"
+                className="ml-1.5 text-xs px-1.5 py-0.5 font-body font-medium"
               >
                 {selectedReport.report_type}
               </Badge>
@@ -166,7 +166,11 @@ export function ReportMap({ mapHeight = defaultHeight, ...props }: ReportMapProp
   const apiKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY;
 
   if (!apiKey) {
-    return <div className="text-destructive p-4 text-center">Error: API Key de Google Maps no configurada.</div>;
+    return (
+       <div className="font-body text-destructive bg-destructive/10 border border-destructive/30 rounded-md p-4 text-center">
+         Error: API Key de Google Maps no configurada.
+       </div>
+     );
   }
 
   const mapContainerStyle = useMemo(() => ({
@@ -176,7 +180,7 @@ export function ReportMap({ mapHeight = defaultHeight, ...props }: ReportMapProp
 
   return (
     <APIProvider apiKey={apiKey}>
-      <div style={mapContainerStyle} className="bg-muted">
+      <div style={mapContainerStyle} className="bg-muted font-body">
         <MapContent {...props} />
       </div>
     </APIProvider>

@@ -81,25 +81,25 @@ export default function ReceivedRequestsPage() {
         <div className="container mx-auto px-4 py-10">
             <Card>
                 <CardHeader>
-                    <CardTitle>Solicitudes de Adopción Recibidas</CardTitle>
-                    <CardDescription>Solicitudes enviadas por otros usuarios para adoptar tus mascotas.</CardDescription>
+                    <CardTitle className="font-heading">Solicitudes de Adopción Recibidas</CardTitle>
+                    <CardDescription className="font-body">Solicitudes enviadas por otros usuarios para adoptar tus mascotas.</CardDescription>
                 </CardHeader>
                 <CardContent>
                      {requests && requests.length > 0 ? (
                         <Table>
                             <TableHeader>
                                 <TableRow>
-                                    <TableHead>Mascota</TableHead>
-                                    <TableHead>Fecha Solicitud</TableHead>
-                                    <TableHead>Solicitante</TableHead>
-                                    <TableHead>Estado</TableHead>
-                                    <TableHead className="text-right">Acciones</TableHead>
+                                    <TableHead className="font-body">Mascota</TableHead>
+                                    <TableHead className="font-body">Fecha Solicitud</TableHead>
+                                    <TableHead className="font-body">Solicitante</TableHead>
+                                    <TableHead className="font-body">Estado</TableHead>
+                                    <TableHead className="font-body text-right">Acciones</TableHead>
                                 </TableRow>
                             </TableHeader>
                             <TableBody>
                                 {requests.map((req) => (
                                     <TableRow key={req.id}>
-                                        <TableCell className="font-medium">
+                                        <TableCell className="font-body font-medium">
                                             {req.pets ? (
                                                 <Link href={`/pets/${req.pet_id}`} className="hover:underline text-primary flex items-center gap-1">
                                                     <PawPrint size={16} /> {req.pets.name}
@@ -108,8 +108,8 @@ export default function ReceivedRequestsPage() {
                                                 <span>Mascota ID: {req.pet_id}</span>
                                             )}
                                         </TableCell>
-                                        <TableCell>{format(new Date(req.request_date), 'dd/MM/yyyy HH:mm', { locale: es })}</TableCell>
-                                        <TableCell>
+                                        <TableCell className="font-body">{format(new Date(req.request_date), 'dd/MM/yyyy HH:mm', { locale: es })}</TableCell>
+                                        <TableCell className="font-body">
                                             {req.profiles ? (
                                                 <span title={req.profiles.email || req.user_id} className="flex items-center gap-1">
                                                     <User size={16} /> 
@@ -146,7 +146,7 @@ export default function ReceivedRequestsPage() {
                                                 </div>
                                             )}
                                             {req.status !== ADOPTION_REQUEST_STATUS.PENDING && (
-                                                <span className="text-xs text-muted-foreground">Acción realizada</span>
+                                                <span className="font-body text-xs text-muted-foreground">Acción realizada</span>
                                             )}
                                         </TableCell>
                                     </TableRow>
@@ -156,7 +156,7 @@ export default function ReceivedRequestsPage() {
                     ) : (
                         <div className="text-center py-10 text-muted-foreground">
                             <Inbox className="mx-auto h-12 w-12 mb-4" />
-                            <p>No has recibido ninguna solicitud de adopción aún.</p>
+                            <p className="font-body">No has recibido ninguna solicitud de adopción aún.</p>
                         </div>
                     )}
                 </CardContent>

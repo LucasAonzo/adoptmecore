@@ -74,192 +74,191 @@ export default function AddPetPage() {
   }
 
   return (
-    <div className="max-w-2xl mx-auto p-4">
-      <h1 className="text-3xl font-bold mb-8">Agregar Nueva Mascota</h1>
-      <Form {...form}>
-        {/* Usar encType="multipart/form-data" si subiéramos de forma tradicional, pero con Supabase client no es estrictamente necesario */}
-        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-          {/* Nombre */}
-          <FormField
-            control={form.control}
-            name="name"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Nombre *</FormLabel>
-                <FormControl>
-                  <Input placeholder="Buddy" {...field} />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-
-          {/* Imagen */}
-          <FormItem>
-             <FormLabel>Imagen Principal *</FormLabel>
-             <FormControl>
-                <Input type="file" accept="image/*" onChange={handleImageChange} />
-             </FormControl>
-             {imagePreview && (
-                <div className="mt-4">
-                    <p className="text-sm font-medium mb-2">Previsualización:</p>
-                    <img src={imagePreview} alt="Previsualización" className="h-40 w-auto rounded-md object-cover" />
-                </div>
-             )}
-             <FormMessage>{!imageFile && form.formState.isSubmitted ? "La imagen es requerida." : ""}</FormMessage>
-          </FormItem>
-
-          {/* Especie (Select) */}
-           <FormField
-            control={form.control}
-            name="species"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Especie</FormLabel>
-                <Select onValueChange={field.onChange} defaultValue={field.value ?? undefined}>
-                  <FormControl>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Selecciona una especie" />
-                    </SelectTrigger>
-                  </FormControl>
-                  <SelectContent>
-                    {speciesOptions.map(option => (
-                        <SelectItem key={option} value={option}>
-                            {/* Capitalizar opción */} 
-                            {option.charAt(0).toUpperCase() + option.slice(1)}
-                        </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-
-          {/* Raza */}
-          <FormField
-            control={form.control}
-            name="breed"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Raza</FormLabel>
-                <FormControl>
-                  {/* Asegurarse de pasar null si el valor es vacío */}
-                  <Input placeholder="Labrador" {...field} value={field.value ?? ''} onChange={e => field.onChange(e.target.value || null)} />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-
-          {/* Edad (Años y Meses) - Podríamos usar un layout grid aquí */}
-          <div className="grid grid-cols-2 gap-4">
+    <div className="flex items-center justify-center min-h-screen px-4 py-12">
+      <div className="max-w-2xl w-full bg-card p-8 rounded-lg shadow-lg border border-border">
+        <h1 className="font-heading text-3xl font-bold mb-8 text-center">Agregar Nueva Mascota</h1>
+        <Form {...form}>
+          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+            {/* Nombre */}
             <FormField
-                control={form.control}
-                name="age_years"
-                render={({ field }) => (
+              control={form.control}
+              name="name"
+              render={({ field }) => (
                 <FormItem>
-                    <FormLabel>Años</FormLabel>
-                    <FormControl>
-                    <Input type="number" min="0" placeholder="2" {...field} value={field.value ?? ''} onChange={e => field.onChange(e.target.value === '' ? null : +e.target.value)} />
-                    </FormControl>
-                    <FormMessage />
+                  <FormLabel className="font-body">Nombre *</FormLabel>
+                  <FormControl>
+                    <Input placeholder="Buddy" {...field} />
+                  </FormControl>
+                  <FormMessage />
                 </FormItem>
-                )}
+              )}
             />
+
+            {/* Imagen */}
+            <FormItem>
+               <FormLabel className="font-body">Imagen Principal *</FormLabel>
+               <FormControl>
+                  <Input type="file" accept="image/*" onChange={handleImageChange} />
+               </FormControl>
+               {imagePreview && (
+                  <div className="mt-4">
+                      <p className="font-body text-sm font-medium mb-2">Previsualización:</p>
+                      <img src={imagePreview} alt="Previsualización" className="h-40 w-auto rounded-md object-cover" />
+                  </div>
+               )}
+               <FormMessage>{!imageFile && form.formState.isSubmitted ? "La imagen es requerida." : ""}</FormMessage>
+            </FormItem>
+
+            {/* Especie (Select) */}
+             <FormField
+              control={form.control}
+              name="species"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel className="font-body">Especie</FormLabel>
+                  <Select onValueChange={field.onChange} defaultValue={field.value ?? undefined}>
+                    <FormControl>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Selecciona una especie" />
+                      </SelectTrigger>
+                    </FormControl>
+                    <SelectContent>
+                      {speciesOptions.map(option => (
+                          <SelectItem key={option} value={option}>
+                              {option.charAt(0).toUpperCase() + option.slice(1)}
+                          </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            {/* Raza */}
             <FormField
-                control={form.control}
-                name="age_months"
-                render={({ field }) => (
+              control={form.control}
+              name="breed"
+              render={({ field }) => (
                 <FormItem>
-                    <FormLabel>Meses</FormLabel>
-                    <FormControl>
-                     <Input type="number" min="0" max="11" placeholder="6" {...field} value={field.value ?? ''} onChange={e => field.onChange(e.target.value === '' ? null : +e.target.value)} />
-                    </FormControl>
-                    <FormMessage />
+                  <FormLabel className="font-body">Raza</FormLabel>
+                  <FormControl>
+                    <Input placeholder="Labrador" {...field} value={field.value ?? ''} onChange={e => field.onChange(e.target.value || null)} />
+                  </FormControl>
+                  <FormMessage />
                 </FormItem>
-                )}
+              )}
             />
-          </div>
 
-          {/* Género (Select) */}
-           <FormField
-            control={form.control}
-            name="gender"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Género</FormLabel>
-                <Select onValueChange={field.onChange} defaultValue={field.value ?? undefined}>
+            {/* Edad (Años y Meses) */}
+            <div className="grid grid-cols-2 gap-4">
+              <FormField
+                  control={form.control}
+                  name="age_years"
+                  render={({ field }) => (
+                  <FormItem>
+                      <FormLabel className="font-body">Años</FormLabel>
+                      <FormControl>
+                      <Input type="number" min="0" placeholder="2" {...field} value={field.value ?? ''} onChange={e => field.onChange(e.target.value === '' ? null : +e.target.value)} />
+                      </FormControl>
+                      <FormMessage />
+                  </FormItem>
+                  )}
+              />
+              <FormField
+                  control={form.control}
+                  name="age_months"
+                  render={({ field }) => (
+                  <FormItem>
+                      <FormLabel className="font-body">Meses</FormLabel>
+                      <FormControl>
+                       <Input type="number" min="0" max="11" placeholder="6" {...field} value={field.value ?? ''} onChange={e => field.onChange(e.target.value === '' ? null : +e.target.value)} />
+                      </FormControl>
+                      <FormMessage />
+                  </FormItem>
+                  )}
+              />
+            </div>
+
+            {/* Género (Select) */}
+             <FormField
+              control={form.control}
+              name="gender"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel className="font-body">Género</FormLabel>
+                  <Select onValueChange={field.onChange} defaultValue={field.value ?? undefined}>
+                    <FormControl>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Selecciona un género" />
+                      </SelectTrigger>
+                    </FormControl>
+                    <SelectContent>
+                      {genderOptions.map(option => (
+                          <SelectItem key={option} value={option}>
+                              {option.charAt(0).toUpperCase() + option.slice(1)}
+                          </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            {/* Tamaño (Select) */}
+            <FormField
+              control={form.control}
+              name="size"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel className="font-body">Tamaño</FormLabel>
+                  <Select onValueChange={field.onChange} defaultValue={field.value ?? undefined}>
+                    <FormControl>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Selecciona un tamaño" />
+                      </SelectTrigger>
+                    </FormControl>
+                    <SelectContent>
+                      {sizeOptions.map(option => (
+                          <SelectItem key={option} value={option}>
+                              {option.charAt(0).toUpperCase() + option.slice(1)}
+                          </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            {/* Descripción */}
+            <FormField
+              control={form.control}
+              name="description"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel className="font-body">Descripción</FormLabel>
                   <FormControl>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Selecciona un género" />
-                    </SelectTrigger>
+                    <Textarea
+                      placeholder="Describe la personalidad, historia, necesidades..."
+                      className="resize-y min-h-[100px]"
+                      {...field}
+                      value={field.value ?? ''}
+                       onChange={e => field.onChange(e.target.value || null)}
+                    />
                   </FormControl>
-                  <SelectContent>
-                    {genderOptions.map(option => (
-                        <SelectItem key={option} value={option}>
-                            {option.charAt(0).toUpperCase() + option.slice(1)}
-                        </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
 
-          {/* Tamaño (Select) */}
-          <FormField
-            control={form.control}
-            name="size"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Tamaño</FormLabel>
-                <Select onValueChange={field.onChange} defaultValue={field.value ?? undefined}>
-                  <FormControl>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Selecciona un tamaño" />
-                    </SelectTrigger>
-                  </FormControl>
-                  <SelectContent>
-                    {sizeOptions.map(option => (
-                        <SelectItem key={option} value={option}>
-                            {option.charAt(0).toUpperCase() + option.slice(1)}
-                        </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-
-          {/* Descripción */}
-          <FormField
-            control={form.control}
-            name="description"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Descripción</FormLabel>
-                <FormControl>
-                  <Textarea
-                    placeholder="Describe la personalidad, historia, necesidades..."
-                    className="resize-y min-h-[100px]"
-                    {...field}
-                    value={field.value ?? ''}
-                     onChange={e => field.onChange(e.target.value || null)}
-                  />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-
-          <Button type="submit" disabled={addPetMutation.isPending} className="w-full">
-            {addPetMutation.isPending ? "Agregando Mascota..." : "Agregar Mascota"}
-          </Button>
-        </form>
-      </Form>
+            <Button type="submit" disabled={addPetMutation.isPending} className="w-full">
+              {addPetMutation.isPending ? "Agregando Mascota..." : "Agregar Mascota"}
+            </Button>
+          </form>
+        </Form>
+      </div>
     </div>
   );
 } 

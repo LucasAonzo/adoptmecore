@@ -67,24 +67,24 @@ export default function MyRequestsPage() {
         <div className="container mx-auto px-4 py-10">
             <Card>
                 <CardHeader>
-                    <CardTitle>Mis Solicitudes de Adopción</CardTitle>
-                    <CardDescription>Solicitudes que has enviado para adoptar mascotas.</CardDescription>
+                    <CardTitle className="font-heading">Mis Solicitudes de Adopción</CardTitle>
+                    <CardDescription className="font-body">Solicitudes que has enviado para adoptar mascotas.</CardDescription>
                 </CardHeader>
                 <CardContent>
                     {requests && requests.length > 0 ? (
                         <Table>
                             <TableHeader>
                                 <TableRow>
-                                    <TableHead>Mascota Solicitada</TableHead>
-                                    <TableHead>Fecha Solicitud</TableHead>
-                                    <TableHead className="text-right">Estado</TableHead>
+                                    <TableHead className="font-body">Mascota Solicitada</TableHead>
+                                    <TableHead className="font-body">Fecha Solicitud</TableHead>
+                                    <TableHead className="font-body text-right">Estado</TableHead>
                                     {/* Podríamos añadir columna de Notas si existiera en MyAdoptionRequest */}
                                 </TableRow>
                             </TableHeader>
                             <TableBody>
                                 {requests.map((req) => (
                                     <TableRow key={req.id}>
-                                        <TableCell className="font-medium">
+                                        <TableCell className="font-body font-medium">
                                             {/* Asumiendo que MyAdoptionRequest tiene info de la mascota */}
                                             {req.pets ? (
                                                 <Link href={`/pets/${req.pet_id}`} className="hover:underline text-primary flex items-center gap-1">
@@ -94,7 +94,7 @@ export default function MyRequestsPage() {
                                                 <span>Mascota ID: {req.pet_id}</span>
                                             )}
                                         </TableCell>
-                                        <TableCell>{format(new Date(req.request_date), 'dd/MM/yyyy HH:mm', { locale: es })}</TableCell>
+                                        <TableCell className="font-body">{format(new Date(req.request_date), 'dd/MM/yyyy HH:mm', { locale: es })}</TableCell>
                                         <TableCell className="text-right">
                                             <Badge variant={getStatusBadgeVariant(req.status)}>
                                                 {formatStatus(req.status)}
@@ -107,7 +107,7 @@ export default function MyRequestsPage() {
                     ) : (
                         <div className="text-center py-10 text-muted-foreground">
                             <Inbox className="mx-auto h-12 w-12 mb-4" />
-                            <p>No has enviado ninguna solicitud de adopción aún.</p>
+                            <p className="font-body">No has enviado ninguna solicitud de adopción aún.</p>
                         </div>
                     )}
                 </CardContent>

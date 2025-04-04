@@ -2,6 +2,7 @@
 
 import React from 'react';
 import { useParams, useRouter } from 'next/navigation';
+import { useLoadScript } from '@react-google-maps/api';
 import { useReport } from '@/lib/hooks/useReportsQueries';
 import { useUpdateReport } from '@/lib/hooks/useReportsMutations';
 import { useAuth } from '@/lib/providers/AuthProvider';
@@ -11,14 +12,26 @@ import { Button } from "@/components/ui/button"; // <-- Añadir importación de 
 import { type ReportSubmitData } from '@/lib/schemas/reportSchema'; // Tipo para datos de formulario
 import { toast } from 'sonner';
 
+// Definir las librerías a cargar fuera del componente
+const libraries: ("places" | "drawing" | "geometry" | "visualization")[] = ['places'];
+
 export default function EditReportPage() {
   const params = useParams();
   const router = useRouter();
   const reportId = params.reportId as string;
   const { user } = useAuth();
 
+  // Cargar la librería de Google Maps
+  const { isLoaded, loadError } = useLoadScript({
+    googleMapsApiKey: process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY || "",
+    libraries: libraries,
+    language: 'es', // Opcional: definir idioma
+  });
+
   // 1. Obtener datos del reporte actual
-  const { data: report, error: reportError, isLoading: isLoadingReport, isError: isReportError } = useReport(reportId);
+  const { data: report, error: reportError, isLoading: isLoadingReport, isError: isReportError } = useReport(reportId, {
+     enabled: !!reportId, // Asegurar que solo se ejecute si reportId existe
+  });
   
   // 2. Hook para la mutación de actualización
   const { mutate: updateReportMutate, isPending: isUpdating } = useUpdateReport();
@@ -64,7 +77,29 @@ export default function EditReportPage() {
 
   // --- Renderizado Condicional ---
 
-  // Estado de Carga del reporte
+  // Estado de Carga de la API de Google Maps
+  if (!isLoaded) {
+     return (
+      <div className="container mx-auto px-4 py-8 flex justify-center items-center min-h-[60vh]">
+        <Loader2 className="h-12 w-12 animate-spin text-primary" />
+        <span className="ml-3 text-lg">Cargando mapa...</span>
+      </div>
+    );
+  }
+
+  // Estado de Error al cargar la API de Google Maps
+  if (loadError) {
+    return (
+       <div className="container mx-auto px-4 py-8 text-center text-destructive min-h-[60vh]">
+        <AlertTriangle className="mx-auto h-10 w-10 mb-3" />
+        <h1 className="text-2xl font-bold mb-4">Error al cargar el mapa</h1>
+        <p>No se pudo cargar la API de Google Maps. Por favor, inténtalo de nuevo más tarde.</p>
+         <pre className="mt-4 text-xs text-left bg-muted p-2 rounded">{loadError.message}</pre>
+      </div>
+    );
+  }
+
+  // Estado de Carga del reporte (después de cargar API)
   if (isLoadingReport) {
     return (
       <div className="container mx-auto px-4 py-8 flex justify-center items-center min-h-[60vh]">
@@ -110,7 +145,7 @@ export default function EditReportPage() {
     );
   }
 
-  // Si todo está OK, mostrar el formulario
+  // Si todo está OK (API cargada, reporte cargado, usuario verificado), mostrar el formulario
   return (
     <main className="container mx-auto px-4 py-8">
         <h1 className="text-3xl font-bold mb-6">Editar Reporte</h1>

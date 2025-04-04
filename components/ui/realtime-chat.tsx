@@ -31,7 +31,7 @@ export function RealtimeChat({
   };
 
   return (
-    <div className="space-y-4 p-4" ref={scrollRef}>
+    <div className="space-y-4 font-body" ref={scrollRef}>
       {messages.map((message) => {
         const isCurrentUser = message.senderId && message.senderId === currentUserId;
         return (
@@ -44,28 +44,32 @@ export function RealtimeChat({
           >
             {!isCurrentUser && (
               <Avatar className="h-8 w-8">
-                <AvatarFallback>{message.user.name.substring(0, 1).toUpperCase()}</AvatarFallback>
+                <AvatarFallback className="bg-muted text-muted-foreground text-xs">
+                  {message.user?.name ? message.user.name.substring(0, 1).toUpperCase() : ' '}
+                </AvatarFallback>
               </Avatar>
             )}
             <div
               className={cn(
                 'max-w-[70%] rounded-lg p-3 shadow',
                 isCurrentUser
-                  ? 'bg-blue-500 text-white rounded-br-none'
-                  : 'bg-gray-100 text-gray-800 rounded-bl-none'
+                  ? 'bg-primary text-primary-foreground rounded-br-none'
+                  : 'bg-card text-card-foreground rounded-bl-none'
               )}
             >
               <p className="text-sm break-words">{message.content}</p>
               <span className={cn(
-                "block text-xs mt-1",
-                isCurrentUser ? "text-blue-100" : "text-gray-500"
+                "block text-xs mt-1 opacity-80",
+                isCurrentUser ? "text-primary-foreground" : "text-muted-foreground"
               )}>
                 {formatTime(message.createdAt)}
               </span>
             </div>
             {isCurrentUser && (
               <Avatar className="h-8 w-8">
-                <AvatarFallback>{'TÚ'}</AvatarFallback>
+                <AvatarFallback className="bg-muted text-muted-foreground text-xs">
+                  {'TÚ'}
+                </AvatarFallback>
               </Avatar>
             )}
           </div>

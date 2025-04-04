@@ -28,35 +28,45 @@ export default function MyChatsPage() {
   console.log('[MyChatsPage] conversations:', conversations);
 
   if (isLoading) {
-    return <div className="container mx-auto p-4 flex justify-center"><Loader2 className="h-8 w-8 animate-spin" /></div>;
+    return (
+      <div className="container mx-auto p-4 flex justify-center items-center font-body">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      </div>
+    );
   }
 
   if (error) {
-    return <div className="container mx-auto p-4 text-red-500">Error al cargar conversaciones: {error.message}</div>;
+    return (
+      <div className="container mx-auto p-4 text-center font-body text-destructive bg-destructive/10 border border-destructive/30 rounded-md">
+        Error al cargar conversaciones: {error.message}
+      </div>
+    );
   }
 
   return (
-    <div className="container mx-auto p-4 md:p-6">
-      <h1 className="text-3xl font-bold mb-6">Mis Chats</h1>
+    <div className="container mx-auto p-4 md:p-6 font-body">
+      <h1 className="text-3xl font-heading font-bold mb-6 text-foreground">Mis Chats</h1>
       
       {conversations && conversations.length > 0 ? (
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
           {conversations.map((convo) => (
-            <Link href={`/chat/${convo.conversationId}`} key={convo.conversationId}>
-              <Card className="hover:shadow-lg transition-shadow duration-200 cursor-pointer h-full flex flex-col">
-                <CardHeader className="flex flex-row items-center gap-4 pb-2">
+            <Link href={`/chat/${convo.conversationId}`} key={convo.conversationId} className="block hover:no-underline h-full">
+              <Card className="hover:shadow-lg transition-shadow duration-200 cursor-pointer h-full flex flex-col p-4">
+                <CardHeader className="flex flex-row items-center gap-4 p-0">
                   <Avatar className="h-12 w-12 border">
                     <AvatarImage src={convo.petImageUrl ?? undefined} alt={convo.petName ?? 'Mascota'} />
-                    <AvatarFallback><Dog className="h-6 w-6 text-gray-400" /></AvatarFallback>
+                    <AvatarFallback><Dog className="h-6 w-6 text-muted-foreground" /></AvatarFallback>
                   </Avatar>
-                  <div className="flex-1">
-                    <CardTitle className="text-lg leading-tight">Chat sobre: {convo.petName ?? 'Mascota Desconocida'}</CardTitle>
+                  <div className="flex-1 min-w-0">
+                    <CardTitle className="text-lg font-heading font-semibold leading-tight text-foreground truncate">
+                      Chat sobre: {convo.petName ?? 'Mascota Desconocida'}
+                    </CardTitle>
                     <div className="flex items-center mt-1">
-                      <p className="text-sm text-muted-foreground">
+                      <p className="text-sm text-muted-foreground font-body truncate">
                         Con: {convo.otherParticipantName}
                       </p>
                       {convo.hasUnread && (
-                        <div className="ml-2 h-2.5 w-2.5 rounded-full bg-red-500" title="Mensajes no leídos"></div>
+                        <div className="ml-2 h-2.5 w-2.5 rounded-full bg-red-500 flex-shrink-0" title="Mensajes no leídos"></div>
                       )}
                     </div>
                   </div>
@@ -66,7 +76,7 @@ export default function MyChatsPage() {
           ))}
         </div>
       ) : (
-        <p className="text-muted-foreground">No tienes conversaciones activas.</p>
+        <p className="text-muted-foreground text-center py-10 font-body">No tienes conversaciones activas.</p>
       )}
     </div>
   );

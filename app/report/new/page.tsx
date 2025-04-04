@@ -57,7 +57,7 @@ export default function NewReportPage() {
   };
 
   return (
-    // Aplicar font-body al contenedor principal
+    // REMOVE bg-background from main, rely on layout's main tag background
     <main className="container mx-auto px-4 py-8 font-body">
       {/* Título: Aplicar fuente heading y color foreground */}
       <h1 className="text-3xl font-heading font-bold mb-6 text-foreground">Crear Nuevo Reporte</h1>

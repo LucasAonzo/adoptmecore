@@ -47,11 +47,11 @@ export default function RootLayout({
     // Restore custom font variables to html tag
     <html lang="es" className={`${fontBody.variable} ${fontHeading.variable} ${fontAccent.variable}`}>
       {/* Remove inter.className from body */}
-      <body className={`flex flex-col h-screen bg-background`}> 
+      <body className={`flex flex-col h-screen`}> 
         <ReactQueryProvider>
           <AuthProvider>
             <Navbar />
-            <main className="flex-1">
+            <main className="flex-1 bg-background">
               {children}
             </main>
             <Footer />

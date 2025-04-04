@@ -1,37 +1,42 @@
 import type { LucideIcon } from 'lucide-react';
-import { AlertTriangle, CheckCircle, HelpCircle, HeartPulse, Search, Check } from 'lucide-react';
+import { AlertTriangle, Search, PawPrint, Heart, HelpCircle } from 'lucide-react';
 import type { ReportType } from '@/lib/services/reports'; // Asumiendo que ReportType está en services
 import { type VariantProps } from 'class-variance-authority';
 import { badgeVariants } from "@/components/ui/badge"; // Importar tipo de variante
 
 // Interfaz para estilos de tipo de reporte
 export interface ReportTypeStyle {
-  // Inferir el tipo de la variante usando VariantProps
   badgeVariant: VariantProps<typeof badgeVariants>['variant'];
   icon: LucideIcon;
   label: string;
-  markerColor?: string; // Añadir color para marcador de mapa opcionalmente
+  priority?: number; // Añadir prioridad si se usa para ordenar
 }
 
 // Objeto constante con los estilos por tipo de reporte
-export const reportTypeStyles: Record<ReportType, ReportTypeStyle> = {
+export const reportTypeStyles: Record<string, ReportTypeStyle> = {
   LOST: {
-    badgeVariant: 'destructive',
-    icon: HelpCircle, // Cambiado de AlertTriangle a HelpCircle para 'Perdido'?
+    badgeVariant: 'default',
+    icon: Search,
     label: 'Perdido',
-    markerColor: '#EF4444' // red-500
+    priority: 2,
   },
   FOUND: {
     badgeVariant: 'secondary',
-    icon: CheckCircle,
+    icon: PawPrint,
     label: 'Encontrado',
-    markerColor: '#3B82F6' // blue-500
+    priority: 3,
   },
   EMERGENCY: {
     badgeVariant: 'destructive',
-    icon: AlertTriangle, // Mantenido AlertTriangle para Urgencia
-    label: 'Urgencia',
-    markerColor: '#F97316' // orange-500
+    icon: AlertTriangle,
+    label: 'Emergencia',
+    priority: 1,
+  },
+  ADOPTION: {
+    badgeVariant: 'outline',
+    icon: Heart,
+    label: 'Adopción',
+    priority: 4,
   },
 };
 
@@ -39,15 +44,14 @@ export const reportTypeStyles: Record<ReportType, ReportTypeStyle> = {
 export const defaultReportStyle: ReportTypeStyle = {
   badgeVariant: 'outline',
   icon: HelpCircle,
-  label: 'Desconocido',
-  markerColor: '#6B7280' // gray-500
+  label: 'Reporte',
+  priority: 5,
 };
 
 // Opcional: Estilos específicos para marcadores (si son diferentes de los iconos de Badge)
-export const markerIcons: Record<ReportType, LucideIcon> = {
-    LOST: Search,
-    FOUND: Check,
-    EMERGENCY: HeartPulse,
-};
-
-export const defaultMarkerIcon = Search; 
+// export const markerIcons: Record<ReportType, LucideIcon> = {
+//     LOST: Search,
+//     FOUND: Check,
+//     EMERGENCY: HeartPulse,
+// };
+// export const defaultMarkerIcon = Search; 

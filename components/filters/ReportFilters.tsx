@@ -54,15 +54,15 @@ export function ReportFilters({ initialFilters, onFiltersChange }: ReportFilters
   const hasActiveFilters = reportType !== 'ALL' || petType !== 'ALL';
 
   return (
-    <div className="flex flex-col md:flex-row gap-4 p-4 border rounded-lg bg-card mb-6 items-end">
+    <div className="flex flex-col md:flex-row gap-4 p-4 border rounded-lg bg-card mb-6 items-end font-body">
       {/* Filtro por Tipo de Reporte */}
       <div className="flex-grow"> {/* Usar flex-grow para que ocupe espacio */}
-        <Label htmlFor="filter-report-type" className="text-sm font-medium mb-1 block">Tipo de Reporte</Label>
+        <Label htmlFor="filter-report-type" className="text-sm font-medium mb-1 block text-foreground font-body">Tipo de Reporte</Label>
         <Select value={reportType} onValueChange={handleReportTypeChange}>
-          <SelectTrigger id="filter-report-type" className="w-full md:w-auto">
+          <SelectTrigger id="filter-report-type" className="w-full md:w-auto font-body">
             <SelectValue placeholder="Todos los tipos" />
           </SelectTrigger>
-          <SelectContent>
+          <SelectContent className="font-body">
             <SelectItem value="ALL">Todos</SelectItem>
             <SelectItem value="LOST">Perdido</SelectItem>
             <SelectItem value="FOUND">Encontrado</SelectItem>
@@ -73,12 +73,12 @@ export function ReportFilters({ initialFilters, onFiltersChange }: ReportFilters
 
       {/* Filtro por Tipo de Animal */}
       <div className="flex-grow"> {/* Usar flex-grow */}
-        <Label htmlFor="filter-pet-type" className="text-sm font-medium mb-1 block">Tipo de Animal</Label>
+        <Label htmlFor="filter-pet-type" className="text-sm font-medium mb-1 block text-foreground font-body">Tipo de Animal</Label>
         <Select value={petType} onValueChange={handlePetTypeChange}>
-          <SelectTrigger id="filter-pet-type" className="w-full md:w-auto">
+          <SelectTrigger id="filter-pet-type" className="w-full md:w-auto font-body">
             <SelectValue placeholder="Todos los animales" />
           </SelectTrigger>
-          <SelectContent>
+          <SelectContent className="font-body">
             {PET_TYPES_OPTIONS.map((option) => (
               <SelectItem key={option} value={option}>
                 {option === 'ALL' ? 'Todos' : option}
@@ -95,7 +95,7 @@ export function ReportFilters({ initialFilters, onFiltersChange }: ReportFilters
           size="sm"
           onClick={clearFilters}
           disabled={!hasActiveFilters}
-          className="text-muted-foreground hover:text-foreground disabled:opacity-50"
+          className="text-muted-foreground hover:text-foreground disabled:opacity-50 font-body"
         >
           <X className="mr-1 h-4 w-4" />
           Limpiar Filtros

@@ -45,7 +45,7 @@ export default function PetsPage() {
   // Si hay datos y no hay error/carga
   return (
     <div>
-      <h1 className="text-3xl font-bold mb-8">Mascotas en Adopción</h1>
+      <h1 className="font-heading text-3xl font-bold mb-8">Mascotas en Adopción</h1>
 
       {pets && pets.length > 0 ? (
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
@@ -55,7 +55,7 @@ export default function PetsPage() {
           ))}
         </div>
       ) : (
-        <p>No hay mascotas disponibles en este momento.</p>
+        <p className="font-body">No hay mascotas disponibles en este momento.</p>
       )}
     </div>
   );

@@ -170,42 +170,49 @@ export default function ChatPage() {
   //const currentUsername = user?.email?.split('@')[0] || 'Tú';
 
   return (
-    // Main container: flex-col, height defined by parent (main with flex-1)
-    <div className="flex flex-col h-full bg-gray-100"> 
-      {/* Messages Area: Takes available space, scrolls internally */}
-      <div ref={scrollRef} className="flex-1 overflow-y-auto min-h-0"> 
+    // Main container: flex-col, inherits bg-background from layout, ensure font-body
+    <div className="flex flex-col h-full font-body"> 
+      {/* Messages Area: Transparent background, scrolls internally */}
+      <div ref={scrollRef} className="flex-1 overflow-y-auto min-h-0 p-4 md:p-6"> {/* Added padding here */}
         {/* Conditionally render RealtimeChat only when user ID is available */}
         {isStillLoading ? (
           <div className="flex justify-center items-center h-full">
-            <Loader2 className="h-8 w-8 animate-spin" />
+            {/* Loading spinner uses primary color */}
+            <Loader2 className="h-8 w-8 animate-spin text-primary" />
           </div>
         ) : user?.id ? (
+          // RealtimeChat component assumed to handle internal message styling
           <RealtimeChat
             messages={combinedMessages}
-            isLoading={false} // isLoadingMessages is handled above
-            currentUserId={user.id} // Pass guaranteed user.id
+            isLoading={false} 
+            currentUserId={user.id} 
           />
         ) : (
-          <div className="p-4 text-red-600">Error: No se pudo identificar al usuario.</div>
+          // Error text uses destructive color
+          <div className="p-4 text-center text-destructive bg-destructive/10 border border-destructive/30 rounded-md">
+            Error: No se pudo identificar al usuario.
+          </div>
         )}
       </div>
 
-      {/* Input Area: Fixed height, does not shrink */}
-      <div className="border-t p-4 bg-white flex-shrink-0"> 
+      {/* Input Area: Uses bg-card, theme border */}
+      <div className="border-t border-border p-4 bg-card flex-shrink-0"> 
         <div className="flex items-center gap-2">
+          {/* Input uses theme styles and font-body */}
           <Input
             type="text"
             placeholder="Escribe un mensaje..."
             value={inputValue}
             onChange={handleInputChange}
             onKeyDown={handleKeyDown}
-            className="flex-1"
+            className="flex-1 font-body"
             disabled={!isConnected} 
           />
+          {/* Button uses default variant (primary) and font-body/medium */}
           <Button 
             onClick={handleSendMessage} 
             disabled={!isConnected || inputValue.trim() === ''} 
-            className="bg-blue-600 hover:bg-blue-700"
+            className="font-body font-medium"
           >
             Enviar
           </Button>
