@@ -4,82 +4,61 @@
 
 @layer base {
   :root {
-    --background: 0 0% 100%;
-    --foreground: 222.2 84% 4.9%;
-    --card: 0 0% 100%;
-    --card-foreground: 222.2 84% 4.9%;
-    --popover: 0 0% 100%;
-    --popover-foreground: 222.2 84% 4.9%;
-    --primary: 221.2 83.2% 53.3%;
-    --primary-foreground: 210 40% 98%;
-    --secondary: 210 40% 96.1%;
-    --secondary-foreground: 222.2 47.4% 11.2%;
-    --muted: 210 40% 96.1%;
-    --muted-foreground: 215.4 16.3% 46.9%;
-    --accent: 210 40% 96.1%;
-    --accent-foreground: 222.2 47.4% 11.2%;
-    --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 210 40% 98%;
-    --border: 214.3 31.8% 91.4%;
-    --input: 214.3 31.8% 91.4%;
-    --ring: 221.2 83.2% 53.3%;
-    --radius: 0.5rem;
-    /* Variables adicionales de chart y sidebar */
-    --chart-1: oklch(0.646 0.222 41.116);
-    --chart-2: oklch(0.6 0.118 184.704);
-    --chart-3: oklch(0.398 0.07 227.392);
-    --chart-4: oklch(0.828 0.189 84.429);
-    --chart-5: oklch(0.769 0.188 70.08);
-    --sidebar: oklch(0.984 0.003 247.858);
-    --sidebar-foreground: oklch(0.129 0.042 264.695);
-    --sidebar-primary: oklch(0.208 0.042 265.755);
-    --sidebar-primary-foreground: oklch(0.984 0.003 247.858);
-    --sidebar-accent: oklch(0.968 0.007 247.896);
-    --sidebar-accent-foreground: oklch(0.208 0.042 265.755);
-    --sidebar-border: oklch(0.929 0.013 255.508);
-    --sidebar-ring: oklch(0.704 0.04 256.788);
+    /* Colores base de la nueva paleta (HEX) */
+    --background: #fefcf9; /* neutral.white */
+    --foreground: #4a4a47; /* neutral.700 */
+    --card: #ffffff;       /* Blanco puro */
+    --card-foreground: #1f2523; /* neutral.900 - Ajustado para contraste con blanco */
+    --popover: #ffffff;    /* Blanco puro */
+    --popover-foreground: #1f2523; /* neutral.900 - Ajustado para contraste con blanco */
+    --primary: #9b6bc3;    /* primary.500 */
+    --primary-foreground: #fefcf9; /* neutral.white */
+    --secondary: #f28c6e;  /* secondary.main */
+    --secondary-foreground: #1f2523; /* neutral.900 */
+    --muted: #f2f0ec;     /* neutral.100 */
+    --muted-foreground: #878784; /* neutral.500 */
+    --accent: #78c4a8;     /* accent.mint */
+    --accent-foreground: #1f2523; /* neutral.900 */
+    --destructive: #e07e8a; /* error.main */
+    --destructive-foreground: #fefcf9; /* neutral.white */
+    --border: #e5e3de;     /* neutral.200 */
+    --input: #e5e3de;      /* neutral.200 */
+    --ring: #ac82ce;       /* primary.400 */
+
+    --radius: 0.5rem; /* Radio de borde preferido */
+
+    /* Mantener variables adicionales si se usan, o eliminarlas si no */
+    /* --chart-1: ... */
+    /* --sidebar: ... */
   }
 
   .dark {
-    --background: 222.2 84% 4.9%;
-    --foreground: 210 40% 98%;
-    --card: 222.2 84% 4.9%;
-    --card-foreground: 210 40% 98%;
-    --popover: 222.2 84% 4.9%;
-    --popover-foreground: 210 40% 98%;
-    --primary: 217.2 91.2% 59.8%;
-    --primary-foreground: 222.2 47.4% 11.2%;
-    --secondary: 217.2 32.6% 17.5%;
-    --secondary-foreground: 210 40% 98%;
-    --muted: 217.2 32.6% 17.5%;
-    --muted-foreground: 215 20.2% 65.1%;
-    --accent: 217.2 32.6% 17.5%;
-    --accent-foreground: 210 40% 98%;
-    --destructive: 0 62.8% 30.6%;
-    --destructive-foreground: 210 40% 98%;
-    --border: 217.2 32.6% 17.5%;
-    --input: 217.2 32.6% 17.5%;
-    --ring: 224.3 76.3% 48%;
-    /* Variables adicionales de chart y sidebar */
-    --chart-1: oklch(0.488 0.243 264.376);
-    --chart-2: oklch(0.696 0.17 162.48);
-    --chart-3: oklch(0.769 0.188 70.08);
-    --chart-4: oklch(0.627 0.265 303.9);
-    --chart-5: oklch(0.645 0.246 16.439);
-    --sidebar: oklch(0.208 0.042 265.755);
-    --sidebar-foreground: oklch(0.984 0.003 247.858);
-    --sidebar-primary: oklch(0.488 0.243 264.376);
-    --sidebar-primary-foreground: oklch(0.984 0.003 247.858);
-    --sidebar-accent: oklch(0.279 0.041 260.031);
-    --sidebar-accent-foreground: oklch(0.984 0.003 247.858);
-    --sidebar-border: oklch(1 0 0 / 10%);
-    --sidebar-ring: oklch(0.551 0.027 264.364);
+    /* Colores para modo oscuro (HEX) - AJUSTAR SEGÚN NECESIDAD Y CONTRASTE */
+    --background: #2f2f2d; /* neutral.800 */
+    --foreground: #faf9f6; /* neutral.50 */
+    --card: #1f2523;       /* neutral.900 - Negro suave para card en dark */
+    --card-foreground: #faf9f6; /* neutral.50 */
+    --popover: #1f2523; /* neutral.900 */
+    --popover-foreground: #faf9f6; /* neutral.50 */
+    --primary: #ac82ce;    /* primary.400 */
+    --primary-foreground: #1f2523; /* neutral.900 */
+    --secondary: #d9775c;  /* secondary.dark */
+    --secondary-foreground: #fefcf9; /* neutral.white */
+    --muted: #2f2f2d;     /* neutral.800 */
+    --muted-foreground: #878784; /* neutral.500 */
+    --accent: #78c4a8;     /* accent.mint */
+    --accent-foreground: #1f2523; /* neutral.900 */
+    --destructive: #c97079; /* error.dark */
+    --destructive-foreground: #fefcf9; /* neutral.white */
+    --border: #4a4a47;     /* neutral.700 */
+    --input: #4a4a47;      /* neutral.700 */
+    --ring: #c0a0da;       /* primary.300 */
+
+    /* Mantener/ajustar variables adicionales si se usan */
+    /* --chart-1: ... */
+    /* --sidebar: ... */
   }
 }
 
-/* No es necesario aplicar explícitamente bg-background y text-foreground aquí */
-/* @layer base {
-  body {
-    @apply bg-background text-foreground;
-  }
-} */
+/* Eliminado el @layer base { body { ... } } ya que no es estrictamente necesario */
+/* y los estilos base de Tailwind ya aplican colores de fondo/texto */

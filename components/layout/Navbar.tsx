@@ -56,23 +56,43 @@ export default function Navbar() {
     };
 
     return (
-        <header className="sticky top-0 z-50 w-full border-b bg-blue-600 backdrop-blur supports-[backdrop-filter]:bg-blue-600/60 py-2">
+        <header className="sticky top-0 z-50 w-full border-b border-border bg-primary py-2">
             <div className="container flex h-14 items-center justify-between px-6 md:px-8">
                 {/* Logo */} 
-                 <Link href="/" className="flex items-center gap-2 font-bold mr-8 flex-shrink-0">
-                    <PawPrint className="h-6 w-6 text-white" />
-                    <span className="hidden sm:inline-block text-white">AdoptMe Tuc</span>
+                 <Link href="/" className="flex items-center gap-2 font-heading font-bold text-primary-foreground mr-8 flex-shrink-0">
+                    <PawPrint className="h-6 w-6" />
+                    <span className="hidden sm:inline-block">AdoptMe Tuc</span>
                 </Link>
 
+                {/* --- Mobile Main Navigation (Visible below md breakpoint) --- */}
+                <nav className="flex md:hidden flex-grow items-center justify-center gap-3">
+                    {mainNavLinks.map((link) => (
+                        <Link
+                            key={link.href}
+                            href={link.href}
+                            className={cn(
+                                "text-xs font-medium transition-colors",
+                                pathname === link.href
+                                    ? "text-primary-foreground bg-primary-600 px-3 py-1 rounded-full hover:text-primary-foreground/80"
+                                    : "text-primary-200 hover:text-primary-foreground"
+                            )}
+                        >
+                            {link.label}
+                        </Link>
+                    ))}
+                </nav>
+
                 {/* --- Navegación Escritorio (Enlaces Principales) --- */} 
-                 <nav className="hidden md:flex items-center gap-4 lg:gap-6">
+                 <nav className="hidden md:flex items-center gap-4 lg:gap-6 font-body">
                      {mainNavLinks.map((link) => (
                         <Link
                             key={link.href}
                             href={link.href}
                             className={cn(
-                                "text-sm font-medium transition-colors hover:text-white/80",
-                                pathname === link.href ? "text-white font-semibold" : "text-white/70"
+                                "text-sm font-medium transition-colors",
+                                pathname === link.href 
+                                    ? "text-primary-foreground bg-primary-600 px-3 py-1 rounded-full hover:text-primary-foreground/80"
+                                    : "text-primary-200 hover:text-primary-foreground"
                             )}
                         >
                             {link.label}
@@ -83,23 +103,25 @@ export default function Navbar() {
                 {/* --- Menú Usuario / Botones Auth (Escritorio) --- */} 
                  <div className="hidden md:flex items-center gap-2 md:gap-4">
                     {isLoading && (
-                        <Button variant="ghost" disabled size="sm" className="text-white">Cargando...</Button>
+                        <Button variant="ghost" disabled size="sm" className="text-primary-foreground">Cargando...</Button>
                      )}
                     {/* Added My Chats link BEFORE the dropdown */} 
                     {!isLoading && user && (
                         <Link
                             href="/my-chats"
                             className={cn(
-                                "relative text-sm font-medium transition-colors hover:text-white/80",
-                                pathname === '/my-chats' ? "text-white font-semibold" : "text-white/70"
+                                "relative text-sm font-body font-medium transition-colors",
+                                pathname === '/my-chats' 
+                                    ? "text-primary-foreground bg-primary-600 px-3 py-1 rounded-full hover:text-primary-foreground/80"
+                                    : "text-primary-200 hover:text-primary-foreground"
                             )}
                         >
                             Mis Chats
                             {/* Use hasGloballyUnread from context */}
                             {hasGloballyUnread && (
                                 <span className="absolute top-0 right-0 -mt-1 -mr-1 flex h-2.5 w-2.5">
-                                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
-                                  <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-red-500"></span>
+                                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-destructive opacity-75"></span>
+                                  <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-destructive"></span>
                                 </span>
                             )}
                         </Link>
@@ -107,11 +129,14 @@ export default function Navbar() {
                     {!isLoading && user && (
                         <DropdownMenu>
                             <DropdownMenuTrigger asChild>
-                                <Button variant="ghost" className="relative h-9 w-auto px-2 py-1 rounded-full text-white hover:bg-blue-700">
+                                <Button 
+                                    variant="ghost" 
+                                    className="relative h-9 w-auto px-2 py-1 rounded-full text-primary-foreground hover:bg-primary-foreground/10 hover:text-primary-foreground"
+                                >
                                     <Avatar className="h-7 w-7">
                                         <AvatarFallback>{getInitials(user.email)}</AvatarFallback>
                                     </Avatar>
-                                    <span className="text-sm font-medium ml-2 hidden lg:inline-block truncate max-w-[150px]">{user.email}</span>
+                                    <span className="font-body text-sm font-medium ml-2 hidden lg:inline-block truncate max-w-[150px] text-primary-foreground">{user.email}</span>
                                 </Button>
                             </DropdownMenuTrigger>
                             <DropdownMenuContent 
@@ -127,22 +152,22 @@ export default function Navbar() {
                             >
                                 <DropdownMenuLabel className="font-normal">
                                     <div className="flex flex-col space-y-1">
-                                        <p className="text-sm font-medium leading-none">Mi Cuenta</p>
-                                        <p className="text-xs leading-none text-muted-foreground">
+                                        <p className="font-body text-sm font-medium leading-none">Mi Cuenta</p>
+                                        <p className="font-body text-xs leading-none text-muted-foreground">
                                             {user.email}
                                         </p>
                                     </div>
                                 </DropdownMenuLabel>
                                 <DropdownMenuSeparator />
                                 <DropdownMenuGroup>
-                                    <DropdownMenuItem asChild className="cursor-pointer">
+                                    <DropdownMenuItem asChild className="font-body cursor-pointer">
                                         <Link href="/profile/edit">
                                             <UserCircle className="mr-2 h-4 w-4" />
                                             <span>Editar Perfil</span>
                                         </Link>
                                     </DropdownMenuItem>
                                     {userMenuLinks.map((link) => (
-                                        <DropdownMenuItem key={link.href} asChild className="cursor-pointer">
+                                        <DropdownMenuItem key={link.href} asChild className="font-body cursor-pointer">
                                             <Link href={link.href}>
                                                 <link.icon className="mr-2 h-4 w-4" />
                                                 <span>{link.label}</span>
@@ -151,7 +176,7 @@ export default function Navbar() {
                                     ))}
                                 </DropdownMenuGroup>
                                 <DropdownMenuSeparator />
-                                <DropdownMenuItem onClick={handleLogout} className="cursor-pointer">
+                                <DropdownMenuItem onClick={handleLogout} className="font-body cursor-pointer">
                                     <LogOut className="mr-2 h-4 w-4" />
                                     <span>Logout</span>
                                 </DropdownMenuItem>
@@ -160,10 +185,10 @@ export default function Navbar() {
                     )}
                      {!isLoading && !user && (
                          <div className="flex items-center gap-2">
-                             <Button variant="ghost" asChild size="sm" className="text-white hover:bg-blue-700">
+                             <Button variant="ghost" asChild size="sm" className="font-body text-primary-foreground hover:bg-primary-foreground/10 hover:text-primary-foreground">
                                 <Link href="/login">Login</Link>
                              </Button>
-                             <Button asChild size="sm" variant="secondary" className="bg-white text-blue-600 hover:bg-white/90">
+                             <Button asChild size="sm" variant="secondary" className="font-body">
                                 <Link href="/signup">Sign Up</Link>
                              </Button>
                          </div>
@@ -173,89 +198,107 @@ export default function Navbar() {
                 {/* --- Botón Menú Móvil --- */} 
                  <Sheet open={isSheetOpen} onOpenChange={setIsSheetOpen}>
                     <SheetTrigger asChild>
-                        <Button variant="ghost" size="icon" className="md:hidden text-white hover:bg-blue-700">
-                            <Menu className="h-6 w-6" />
+                        <Button variant="ghost" size="icon" className="md:hidden hover:bg-primary-foreground/10">
+                            <Menu className="h-6 w-6 text-primary-foreground" />
                             <span className="sr-only">Abrir menú</span>
                         </Button>
                     </SheetTrigger>
-                    <SheetContent side="right" className="w-[300px] sm:w-[400px] bg-blue-600 border-l-blue-500">
+                    <SheetContent side="right" className="w-[300px] sm:w-[400px] bg-primary border-l border-border">
                         <SheetHeader className="text-left mb-6">
                             <SheetTitle>
-                                <Link href="/" className="flex items-center gap-2 font-bold text-white" onClick={() => setIsSheetOpen(false)}>
+                                <Link href="/" className="flex items-center gap-2 font-heading font-bold text-primary-foreground" onClick={() => setIsSheetOpen(false)}>
                                     <PawPrint className="h-6 w-6" />
                                     <span>AdoptMe Tuc</span>
                                 </Link>
                             </SheetTitle>
                         </SheetHeader>
-                        <nav className="flex flex-col space-y-3">
-                            {mainNavLinks.map((link) => (
-                                <SheetClose asChild key={link.href}>
-                                    <Link
-                                        href={link.href}
-                                        className={cn(
-                                            "text-lg font-medium transition-colors hover:text-white/80",
-                                            pathname === link.href ? "text-white font-semibold" : "text-white/70"
-                                        )}
-                                    >
-                                        {link.label}
-                                    </Link>
-                                </SheetClose>
-                            ))}
-                            
-                             {/* Links de usuario en móvil */} 
-                             {user && <div className="border-t border-primary-foreground/20 pt-4 mt-4 space-y-3"> { /* Separador visual */} 
-                                {/* Added My Chats link for mobile */} 
-                                <SheetClose asChild>
-                                     <Link href="/my-chats" className="relative flex items-center text-lg font-medium text-primary-foreground/70 transition-colors hover:text-primary-foreground">
-                                         <MessageSquare className="mr-3 h-5 w-5" /> 
-                                         Mis Chats
-                                        {/* Use hasGloballyUnread from context */}
-                                        {hasGloballyUnread && (
-                                            <span className="absolute top-1 right-1 flex h-2.5 w-2.5">
-                                                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
-                                                <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-red-500"></span>
-                                            </span>
-                                        )}
-                                     </Link>
-                                 </SheetClose>
-                                 {/* Add Edit Profile Link for Mobile Here */}
-                                 <SheetClose asChild>
-                                     <Link href="/profile/edit" className="flex items-center text-lg font-medium text-primary-foreground/70 transition-colors hover:text-primary-foreground">
-                                         <UserCircle className="mr-3 h-5 w-5" /> 
-                                         Editar Perfil
-                                     </Link>
-                                 </SheetClose>
-                                {userMenuLinks.map((link) => (
+                        <nav className="flex h-full flex-col justify-between p-6 font-body">
+                            {/* --- Top Section: Main Links & User/Auth Links --- */}
+                            <div className="flex-grow space-y-4">
+                                {mainNavLinks.map((link) => (
                                     <SheetClose asChild key={link.href}>
-                                        <Link href={link.href} className="flex items-center text-lg font-medium text-primary-foreground/70 transition-colors hover:text-primary-foreground">
-                                            <link.icon className="mr-3 h-5 w-5" /> 
+                                        <Link
+                                            href={link.href}
+                                            className={cn(
+                                                "block text-lg font-medium transition-colors",
+                                                pathname === link.href
+                                                    ? "text-primary-foreground bg-primary-foreground/10 px-3 py-1 rounded-full hover:text-primary-foreground/80"
+                                                    : "text-primary-200 hover:text-primary-foreground"
+                                            )}
+                                        >
                                             {link.label}
                                         </Link>
                                     </SheetClose>
                                 ))}
-                                <SheetClose asChild>
-                                    <Button variant="ghost" onClick={handleLogout} className="w-full justify-start text-lg font-medium text-primary-foreground/70 transition-colors hover:text-primary-foreground hover:bg-transparent px-0">
-                                        <LogOut className="mr-3 h-5 w-5" />
-                                        Logout
-                                    </Button>
-                                </SheetClose>
-                             </div>}
-                              
-                               {/* Botones Auth en móvil */} 
-                              {!isLoading && !user && (
-                                  <div className="border-t border-primary-foreground/20 pt-4 mt-4 space-y-3"> { /* Separador visual */} 
-                                      <SheetClose asChild>
-                                         <Button variant="secondary" asChild className="w-full text-lg">
-                                             <Link href="/login">Login</Link>
-                                         </Button>
-                                      </SheetClose>
-                                      <SheetClose asChild>
-                                         <Button variant="secondary" asChild className="w-full text-lg">
-                                             <Link href="/signup">Sign Up</Link>
-                                         </Button>
-                                      </SheetClose>
-                                  </div>
-                              )}
+
+                                {/* --- User Links Section --- */}
+                                {user && (
+                                    <div className="border-t border-primary-foreground/20 pt-6 mt-6 space-y-4">
+                                        <SheetClose asChild>
+                                            <Link
+                                                href="/my-chats"
+                                                className={cn(
+                                                    "relative flex items-center text-lg font-medium transition-colors",
+                                                    pathname === '/my-chats'
+                                                        ? "text-primary-foreground bg-primary-foreground/10 px-3 py-1 rounded-full hover:text-primary-foreground/80"
+                                                        : "text-primary-200 hover:text-primary-foreground"
+                                                )}
+                                            >
+                                                <MessageSquare className="mr-3 h-5 w-5" />
+                                                Mis Chats
+                                                {hasGloballyUnread && (
+                                                    <span className="absolute top-1 right-1 flex h-2.5 w-2.5">
+                                                        <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-destructive opacity-75"></span>
+                                                        <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-destructive"></span>
+                                                    </span>
+                                                )}
+                                            </Link>
+                                        </SheetClose>
+                                        <SheetClose asChild>
+                                            <Link href="/profile/edit" className="flex items-center text-lg font-medium text-primary-200 transition-colors hover:text-primary-foreground">
+                                                <UserCircle className="mr-3 h-5 w-5" />
+                                                Editar Perfil
+                                            </Link>
+                                        </SheetClose>
+                                        {userMenuLinks.map((link) => (
+                                            <SheetClose asChild key={link.href}>
+                                                <Link href={link.href} className="flex items-center text-lg font-medium text-primary-200 transition-colors hover:text-primary-foreground">
+                                                    <link.icon className="mr-3 h-5 w-5" />
+                                                    {link.label}
+                                                </Link>
+                                            </SheetClose>
+                                        ))}
+                                    </div>
+                                )}
+
+                                {/* --- Auth Buttons Section (Logged Out) --- */}
+                                {!isLoading && !user && (
+                                    <div className="border-t border-primary-foreground/20 pt-6 mt-6 space-y-4">
+                                        <SheetClose asChild>
+                                            <Button variant="secondary" asChild className="w-full text-lg font-body">
+                                                <Link href="/login">Login</Link>
+                                            </Button>
+                                        </SheetClose>
+                                        <SheetClose asChild>
+                                            <Button variant="secondary" asChild className="w-full text-lg font-body">
+                                                <Link href="/signup">Sign Up</Link>
+                                            </Button>
+                                        </SheetClose>
+                                    </div>
+                                )}
+                            </div>
+
+                            {/* --- Bottom Section: Logout Button --- */}
+                            {user && (
+                                <div className="mt-auto border-t border-primary-foreground/20 pt-6">
+                                    <SheetClose asChild>
+                                        <Button variant="ghost" onClick={handleLogout} className="w-full justify-start text-lg font-medium text-primary-200 transition-colors hover:text-primary-foreground hover:bg-transparent">
+                                            <LogOut className="mr-3 h-5 w-5" />
+                                            Logout
+                                        </Button>
+                                    </SheetClose>
+                                </div>
+                            )}
                         </nav>
                     </SheetContent>
                 </Sheet>

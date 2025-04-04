@@ -22,6 +22,7 @@ import { useRouter } from 'next/navigation';
 import { toast } from "sonner"; // Para mostrar notificaciones
 import { Loader2 } from "lucide-react";
 import Link from "next/link"; // Importar Link
+import { cn } from "@/lib/utils"; // Import cn
 
 export default function SignUpPage() {
   const router = useRouter();
@@ -114,9 +115,12 @@ export default function SignUpPage() {
   }
 
   return (
-    <div className="flex items-center justify-center min-h-screen bg-muted/40 px-4">
-      <div className="max-w-md w-full bg-background p-8 rounded-lg shadow-lg">
-        <h2 className="text-2xl font-bold text-center mb-6">Crear Cuenta</h2>
+    // Aplicar fuente body y usar fondo global (sin clase explícita)
+    <div className="flex items-center justify-center min-h-screen px-4 font-body">
+      {/* Card usa bg-card, border, shadow, etc */}
+      <div className="max-w-md w-full bg-card p-8 rounded-lg shadow-lg border border-border">
+        {/* Título: Aplicar fuente heading */}
+        <h2 className="text-2xl font-heading font-bold text-center mb-6 text-foreground">Crear Cuenta</h2>
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -125,11 +129,14 @@ export default function SignUpPage() {
                 name="firstName"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Nombre</FormLabel>
+                    {/* Label: Aplicar fuente body y color foreground */}
+                    <FormLabel className="font-body text-foreground">Nombre</FormLabel>
                     <FormControl>
-                      <Input placeholder="Tu nombre" {...field} />
+                      {/* Input: Usa estilos theme, asegurar fuente body */}
+                      <Input placeholder="Tu nombre" {...field} className="font-body" />
                     </FormControl>
-                    <FormMessage />
+                    {/* FormMessage: Usa destructive color, asegurar fuente body */}
+                    <FormMessage className="font-body" />
                   </FormItem>
                 )}
               />
@@ -138,11 +145,14 @@ export default function SignUpPage() {
                 name="lastName"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Apellido</FormLabel>
+                    {/* Label: Aplicar fuente body y color foreground */}
+                    <FormLabel className="font-body text-foreground">Apellido</FormLabel>
                     <FormControl>
-                      <Input placeholder="Tu apellido" {...field} />
+                      {/* Input: Usa estilos theme, asegurar fuente body */}
+                      <Input placeholder="Tu apellido" {...field} className="font-body" />
                     </FormControl>
-                    <FormMessage />
+                     {/* FormMessage: Usa destructive color, asegurar fuente body */}
+                    <FormMessage className="font-body" />
                   </FormItem>
                 )}
               />
@@ -152,11 +162,14 @@ export default function SignUpPage() {
               name="email"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Email</FormLabel>
+                  {/* Label: Aplicar fuente body y color foreground */}
+                  <FormLabel className="font-body text-foreground">Email</FormLabel>
                   <FormControl>
-                    <Input placeholder="tu@email.com" {...field} />
+                    {/* Input: Usa estilos theme, asegurar fuente body */}
+                    <Input placeholder="tu@email.com" {...field} className="font-body" />
                   </FormControl>
-                  <FormMessage />
+                  {/* FormMessage: Usa destructive color, asegurar fuente body */}
+                  <FormMessage className="font-body" />
                 </FormItem>
               )}
             />
@@ -165,14 +178,18 @@ export default function SignUpPage() {
               name="password"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Contraseña</FormLabel>
+                  {/* Label: Aplicar fuente body y color foreground */}
+                  <FormLabel className="font-body text-foreground">Contraseña</FormLabel>
                   <FormControl>
-                    <Input type="password" placeholder="******" {...field} />
+                    {/* Input: Usa estilos theme, asegurar fuente body */}
+                    <Input type="password" placeholder="••••••••" {...field} className="font-body" />
                   </FormControl>
-                  <FormDescription>
+                   {/* Description: Usa muted-foreground, asegurar fuente body */}
+                  <FormDescription className="font-body text-xs">
                     Debe tener al menos 8 caracteres.
                   </FormDescription>
-                  <FormMessage />
+                  {/* FormMessage: Usa destructive color, asegurar fuente body */}
+                  <FormMessage className="font-body" />
                 </FormItem>
               )}
             />
@@ -181,24 +198,27 @@ export default function SignUpPage() {
               name="confirmPassword"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Confirmar Contraseña</FormLabel>
+                  {/* Label: Aplicar fuente body y color foreground */}
+                  <FormLabel className="font-body text-foreground">Confirmar Contraseña</FormLabel>
                   <FormControl>
-                    <Input type="password" placeholder="******" {...field} />
+                    {/* Input: Usa estilos theme, asegurar fuente body */}
+                    <Input type="password" placeholder="••••••••" {...field} className="font-body" />
                   </FormControl>
-                  <FormDescription>
-                    Por favor, confirma tu contraseña.
-                  </FormDescription>
-                  <FormMessage />
+                  {/* FormMessage: Usa destructive color, asegurar fuente body */}
+                  <FormMessage className="font-body" />
                 </FormItem>
               )}
             />
-            <Button type="submit" disabled={loading} className="w-full">
+            {/* Button: variant="default" usa primary, asegurar fuente body y peso */} 
+            <Button type="submit" disabled={loading} className="w-full font-body font-medium">
               {loading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null} 
               {loading ? "Creando..." : "Crear Cuenta"}
             </Button>
-            <p className="mt-4 text-center text-sm text-muted-foreground">
+            {/* Texto inferior: usa muted-foreground, asegurar fuente body */}
+            <p className="mt-4 text-center text-sm text-muted-foreground font-body">
              ¿Ya tienes cuenta?{" "}
-             <Link href="/login" className="underline hover:text-primary">
+             {/* Link: usa text-primary en hover, asegurar fuente y peso */}
+             <Link href="/login" className="underline hover:text-primary font-medium">
                Inicia Sesión
              </Link>
            </p>

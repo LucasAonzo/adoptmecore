@@ -34,21 +34,31 @@ export interface Pet {
  * @param species - Especie opcional para filtrar.
  * @param gender - Género opcional para filtrar.
  * @param size - Tamaño opcional para filtrar.
+ * @param page - Número de página para paginación.
+ * @param limit - Número de elementos por página.
  */
 export async function getPets(
     supabase: SupabaseClient,
     searchTerm?: string,
     species?: string,
     gender?: string,
-    size?: string
-): Promise<Pet[]> {
+    size?: string,
+    page: number = 1, // Default to page 1
+    limit: number = 12 // Default limit
+): Promise<{ data: Pet[], count: number | null }> { // <-- Update return type
+
+  // Asegurarse que page y limit son números válidos
+  const pageNum = Math.max(1, page);
+  const limitNum = Math.max(1, limit);
+  const rangeFrom = (pageNum - 1) * limitNum;
+  const rangeTo = rangeFrom + limitNum - 1;
 
   let query = supabase
     .from('pets')
     .select(`
       *,
       pet_images ( image_url )
-    `)
+    `, { count: 'exact' }) // <-- Request total count
     .eq('pet_images.is_primary', true)
     .limit(1, { foreignTable: 'pet_images' });
 
@@ -76,8 +86,11 @@ export async function getPets(
 
   query = query.order('created_at', { ascending: false });
 
-  console.log('Executing query...');
-  const { data, error } = await query;
+  // Apply pagination range
+  query = query.range(rangeFrom, rangeTo);
+
+  console.log(`Executing query with pagination: page=${pageNum}, limit=${limitNum}, range=(${rangeFrom}-${rangeTo})`);
+  const { data, error, count } = await query; // <-- Get count from response
 
    if (error) {
     console.error("Error fetching pets:", error);
@@ -93,8 +106,9 @@ export async function getPets(
            primary_image_url: primaryImageUrl,
        } as Pet;
    }) ?? [];
-  return petsWithImages;
-
+   
+  // Return data and count
+  return { data: petsWithImages, count }; 
 }
 
 /**

@@ -22,6 +22,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { loginSchema, LoginSchema } from "@/lib/schemas/authSchemas"; // Importamos el esquema y tipo
 import { createClient } from "@/lib/supabaseClient"; // Importamos la función creadora
+import { cn } from "@/lib/utils"; // Import cn
 
 export default function LoginPage() {
   const router = useRouter();
@@ -75,9 +76,13 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="flex items-center justify-center min-h-screen bg-muted/40 px-4">
-      <div className="max-w-md w-full bg-background p-8 rounded-lg shadow-lg">
-        <h2 className="text-2xl font-bold text-center mb-6">Iniciar Sesión</h2>
+    // Eliminar bg-neutral-50 explícito, confiar en el fondo del body
+    // Aplicar fuente body por defecto
+    <div className="flex items-center justify-center min-h-screen px-4 font-body">
+      {/* Card usa bg-background por defecto */}
+      <div className="max-w-md w-full bg-card p-8 rounded-lg shadow-lg border border-border">
+        {/* Título: Aplicar fuente heading */}
+        <h2 className="text-2xl font-heading font-bold text-center mb-6 text-foreground">Iniciar Sesión</h2>
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
             <FormField
@@ -85,11 +90,14 @@ export default function LoginPage() {
               name="email"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Email</FormLabel>
+                  {/* Label: Aplicar fuente body y color foreground */} 
+                  <FormLabel className="font-body text-foreground">Email</FormLabel>
                   <FormControl>
-                    <Input type="email" placeholder="tu@email.com" {...field} />
+                    {/* Input: Usa estilos theme por defecto, asegurar fuente body */} 
+                    <Input type="email" placeholder="tu@email.com" {...field} className="font-body" />
                   </FormControl>
-                  <FormMessage />
+                  {/* FormMessage: Usa destructive color por defecto */} 
+                  <FormMessage className="font-body"/>
                 </FormItem>
               )}
             />
@@ -98,22 +106,28 @@ export default function LoginPage() {
               name="password"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Contraseña</FormLabel>
+                  {/* Label: Aplicar fuente body y color foreground */} 
+                  <FormLabel className="font-body text-foreground">Contraseña</FormLabel>
                   <FormControl>
-                    <Input type="password" placeholder="••••••••" {...field} />
+                    {/* Input: Usa estilos theme por defecto, asegurar fuente body */} 
+                    <Input type="password" placeholder="••••••••" {...field} className="font-body" />
                   </FormControl>
-                  <FormMessage />
+                  {/* FormMessage: Usa destructive color por defecto */} 
+                  <FormMessage className="font-body"/>
                 </FormItem>
               )}
             />
-            <Button type="submit" className="w-full" disabled={isLoading}>
+            {/* Button: variant="default" usa primary, asegurar fuente body y peso */}
+            <Button type="submit" className="w-full font-body font-medium" disabled={isLoading}>
               {isLoading ? <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Iniciando...</> : "Iniciar Sesión"}
             </Button>
           </form>
         </Form>
-        <p className="mt-4 text-center text-sm text-muted-foreground">
+        {/* Texto inferior: usa muted-foreground por defecto, asegurar fuente body */}
+        <p className="mt-4 text-center text-sm text-muted-foreground font-body">
           ¿No tienes cuenta?{" "}
-          <Link href="/signup" className="underline hover:text-primary">
+          {/* Link: usa text-primary por defecto en hover, asegurar fuente */}
+          <Link href="/signup" className="underline hover:text-primary font-medium">
             Regístrate
           </Link>
         </p>

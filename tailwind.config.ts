@@ -1,4 +1,5 @@
 import type { Config } from "tailwindcss";
+const { fontFamily } = require("tailwindcss/defaultTheme") // <-- Restore import
 
 const config = {
   darkMode: "class",
@@ -17,45 +18,80 @@ const config = {
     },
     extend: {
       colors: {
-        border: "hsl(var(--border))",
-        input: "hsl(var(--input))",
-        ring: "hsl(var(--ring))",
-        background: "hsl(var(--background))",
-        foreground: "hsl(var(--foreground))",
+        // Restore references to var(...)
+        border: "var(--border)",
+        input: "var(--input)",
+        ring: "var(--ring)",
+        background: "var(--background)",
+        foreground: "var(--foreground)",
         primary: {
-          DEFAULT: "hsl(var(--primary))",
-          foreground: "hsl(var(--primary-foreground))",
+          // Restore references to var(...)
+          DEFAULT: "var(--primary)",
+          foreground: "var(--primary-foreground)",
+          // Restore full HEX scale
+          50: '#f4eef9', 100: '#e8dcf2', 200: '#d4bee6', 300: '#c0a0da', 400: '#ac82ce',
+          500: '#9b6bc3', 600: '#8c5faf', 700: '#7c539a', 800: '#6c4785', 900: '#5b3b70',
         },
         secondary: {
-          DEFAULT: "hsl(var(--secondary))",
-          foreground: "hsl(var(--secondary-foreground))",
+          // Restore references to var(...)
+          DEFAULT: "var(--secondary)",
+          foreground: "var(--secondary-foreground)",
+          // Restore full HEX scale
+          main: '#f28c6e', light: '#f7b4a0', dark: '#d9775c',
         },
         destructive: {
-          DEFAULT: "hsl(var(--destructive))",
-          foreground: "hsl(var(--destructive-foreground))",
+          // Restore references to var(...)
+          DEFAULT: "var(--destructive)",
+          foreground: "var(--destructive-foreground)",
         },
         muted: {
-          DEFAULT: "hsl(var(--muted))",
-          foreground: "hsl(var(--muted-foreground))",
+          // Restore references to var(...)
+          DEFAULT: "var(--muted)",
+          foreground: "var(--muted-foreground)",
         },
         accent: {
-          DEFAULT: "hsl(var(--accent))",
-          foreground: "hsl(var(--accent-foreground))",
+          // Restore references to var(...)
+          DEFAULT: "var(--accent)",
+          foreground: "var(--accent-foreground)",
+          // Restore full HEX scale
+          mint: '#78c4a8', peach: '#f7a68f', sky: '#8db8d8',
         },
         popover: {
-          DEFAULT: "hsl(var(--popover))",
-          foreground: "hsl(var(--popover-foreground))",
+          // Restore references to var(...)
+          DEFAULT: "var(--popover)",
+          foreground: "var(--popover-foreground)",
         },
         card: {
-          DEFAULT: "hsl(var(--card))",
-          foreground: "hsl(var(--card-foreground))",
+          // Restore references to var(...)
+          DEFAULT: "var(--card)",
+          foreground: "var(--card-foreground)",
         },
+        // Restore functional and neutral scales
+        success: { main: '#6bb384', light: '#e9f4ec', dark: '#5a9e72' },
+        warning: { main: '#e8b548', light: '#fef6e0', dark: '#d1a13e' },
+        error: { main: '#e07e8a', light: '#fcecee', dark: '#c97079' },
+        info: { main: '#6ea8d6', light: '#e8f0fd', dark: '#5e94bf' },
+        neutral: {
+          white: '#fefcf9', black: '#1f2523', 50: '#faf9f6', 100: '#f2f0ec', 200: '#e5e3de',
+          300: '#d7d5d0', 400: '#aeadab', 500: '#878784', 600: '#666663', 700: '#4a4a47',
+          800: '#2f2f2d', 900: '#1f2523',
+        },
+        // Añadir blanco puro si no existe o ajustarlo
+        white: '#ffffff',
       },
       borderRadius: {
         lg: "var(--radius)",
         md: "calc(var(--radius) - 2px)",
         sm: "calc(var(--radius) - 4px)",
       },
+      // Restore fontFamily extension
+      fontFamily: {
+        body: ["var(--font-body)", ...fontFamily.sans],
+        heading: ["var(--font-heading)", ...fontFamily.sans],
+        accent: ["var(--font-accent)", ...fontFamily.sans],
+        sans: ["var(--font-body)", ...fontFamily.sans], // Manrope como sans por defecto
+      },
+      // Mantener keyframes y animation existentes
       keyframes: {
         "accordion-down": {
           from: { height: "0" },

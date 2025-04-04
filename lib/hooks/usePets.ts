@@ -11,39 +11,47 @@ interface PetFilters {
     species?: string;
     gender?: string;
     size?: string;
+    page?: number;
+    limit?: number;
 }
 
 /**
- * Hook para obtener la lista de mascotas, con soporte para búsqueda y filtros.
+ * Hook para obtener la lista paginada de mascotas, con soporte para búsqueda y filtros.
  * @param searchTerm - Término de búsqueda opcional.
  * @param species - Filtro de especie opcional.
  * @param gender - Filtro de género opcional.
  * @param size - Filtro de tamaño opcional.
+ * @param page - Número de página opcional.
+ * @param limit - Número de elementos por página opcional.
  */
 export function usePets(
     searchTerm?: string,
     species?: string,
     gender?: string,
-    size?: string
+    size?: string,
+    page: number = 1,
+    limit: number = 12
 ) {
   const { supabase, isLoading: isLoadingAuth } = useAuth();
 
-  // Crear objeto de filtros para la queryKey (solo incluir si tienen valor)
-  const filters: PetFilters = {};
+  // Crear objeto de filtros para la queryKey (incluir page y limit)
+  const filters: PetFilters = { page, limit };
   if (searchTerm) filters.search = searchTerm;
   if (species) filters.species = species;
   if (gender) filters.gender = gender;
   if (size) filters.size = size;
 
-  // La query key ahora incluye el objeto de filtros
-  const queryKey = Object.keys(filters).length > 0 ? [PETS_QUERY_KEY, filters] : [PETS_QUERY_KEY];
+  // La query key ahora incluye el objeto de filtros completo
+  const queryKey = [PETS_QUERY_KEY, filters];
 
   return useQuery({
     queryKey: queryKey,
-    // Pasar todos los filtros a la función de servicio
-    queryFn: () => getPets(supabase, searchTerm, species, gender, size),
+    // Pasar todos los filtros, page y limit a la función de servicio
+    queryFn: () => getPets(supabase, searchTerm, species, gender, size, page, limit),
     enabled: !isLoadingAuth,
-    staleTime: 1000 * 60 * 5,
+    // Consider adjusting staleTime if frequent page changes are expected
+    staleTime: 1000 * 60 * 2,
+    placeholderData: (previousData) => previousData,
   });
 }
 

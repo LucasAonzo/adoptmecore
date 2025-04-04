@@ -136,28 +136,26 @@ export default function LostFoundPage() {
     }, [locationStatus, userLocation]);
 
     return (
-        <main className="container mx-auto px-4 py-8">
+        <main className="container mx-auto px-4 py-8 font-body">
             <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-4">
                 <div>
-                    <h1 className="text-3xl font-bold">Mascotas Perdidas y Encontradas</h1>
+                    <h1 className="text-3xl font-heading font-bold text-foreground">Mascotas Perdidas y Encontradas</h1>
                     <p className="text-muted-foreground mt-1">
                         Explora los últimos reportes o crea uno nuevo.
                     </p>
                 </div>
-                <Button asChild>
+                <Button asChild className="font-body font-medium">
                     <Link href="/report/new">
                         <PlusCircle className="mr-2 h-4 w-4" /> Crear Reporte
                     </Link>
                 </Button>
             </div>
 
-            {/* Componente de Filtros */}
             <ReportFilters 
                 onFiltersChange={handleFiltersChange} 
             />
 
-            {/* Sección del Mapa - Renderizado Condicional */}
-            <div className="mb-8 h-[500px]"> {/* Contenedor con altura fija */} 
+            <div className="mb-8 h-[500px]">
                 {locationStatus === 'loading' && (
                     <div className="flex items-center justify-center h-full bg-muted rounded-lg">
                         <Loader2 className="h-8 w-8 animate-spin text-primary mr-2" />
@@ -169,25 +167,22 @@ export default function LostFoundPage() {
                        reports={allReports} 
                        initialCenter={initialMapCenter} 
                        mapHeight="100%" 
-                       onBoundsChange={handleBoundsChange} // <-- Pasar la nueva función callback
+                       onBoundsChange={handleBoundsChange}
                     />
                 )}
             </div>
 
-            {/* Estado de carga inicial */} 
             {status === 'pending' ? (
                 <div className="text-center py-10">
                     <Loader2 className="mx-auto h-10 w-10 animate-spin text-primary mb-2" />
                     <p>Cargando reportes...</p>
                 </div>
             ) : status === 'error' ? (
-                // Estado de error
                 <div className="text-center py-10 text-destructive bg-destructive/10 p-4 rounded-md">
                     <AlertTriangle className="mx-auto h-8 w-8 mb-2" />
                     <p>Error al cargar los reportes: {error?.message}</p>
                 </div>
             ) : (
-                // Contenido principal (Lista de reportes)
                 <>
                     {allReports.length === 0 && !isFetching ? (
                         <p className="text-center text-muted-foreground py-10">
@@ -203,31 +198,22 @@ export default function LostFoundPage() {
                         </div>
                     )}
 
-                    {/* Botón Cargar más */} 
                     <div className="text-center">
                         {hasNextPage && (
                             <Button
                                 onClick={() => fetchNextPage()}
                                 disabled={isFetchingNextPage}
+                                variant="outline"
+                                className="font-body font-medium"
                             >
                                 {isFetchingNextPage ? (
                                     <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                                 ) : null}
-                                Cargar más reportes
+                                {isFetchingNextPage ? 'Cargando...' : 'Cargar más reportes'}
                             </Button>
-                        )}
-                        {!hasNextPage && allReports.length > 0 && (
-                            <p className="text-muted-foreground">Has llegado al final.</p>
                         )}
                     </div>
                 </>
-            )}
-
-            {/* Indicador de carga en esquina inferior (opcional) */} 
-            {isFetching && !isFetchingNextPage && status !== 'pending' && (
-                <div className="fixed bottom-4 right-4 bg-background p-2 rounded-full shadow-lg border">
-                    <Loader2 className="h-5 w-5 animate-spin text-primary" />
-                </div>
             )}
         </main>
     );

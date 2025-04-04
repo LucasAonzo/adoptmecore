@@ -57,9 +57,12 @@ export default function NewReportPage() {
   };
 
   return (
-    <main className="container mx-auto px-4 py-8">
-      <h1 className="text-3xl font-bold mb-6">Crear Nuevo Reporte</h1>
-      <p className="mb-6">
+    // Aplicar font-body al contenedor principal
+    <main className="container mx-auto px-4 py-8 font-body">
+      {/* Título: Aplicar fuente heading y color foreground */}
+      <h1 className="text-3xl font-heading font-bold mb-6 text-foreground">Crear Nuevo Reporte</h1>
+      {/* Descripción: Aplicar color muted-foreground (font-body heredado) */}
+      <p className="mb-6 text-muted-foreground">
         Utiliza este formulario para reportar una mascota perdida, encontrada o
         una situación de emergencia. Asegúrate de proporcionar información clara y precisa.
       </p>
@@ -67,24 +70,25 @@ export default function NewReportPage() {
       <div className="max-w-2xl mx-auto">
         {/* Mostrar estado de carga o error */}
         {!isLoaded && (
-          <div className="flex justify-center items-center p-10">
-            <Loader2 className="h-8 w-8 animate-spin mr-2" /> Cargando mapa...
+          // Estado de carga: usar text-primary para icono
+          <div className="flex justify-center items-center p-10 text-muted-foreground">
+            <Loader2 className="h-8 w-8 animate-spin mr-2 text-primary" /> Cargando mapa...
           </div>
         )}
 
         {loadError && (
-          <div className="text-red-600 p-4 border border-red-300 rounded-md">
+          // Estado de error: usar colores destructive
+          <div className="text-destructive bg-destructive/10 p-4 border border-destructive/30 rounded-md">
             Error al cargar Google Maps: {loadError.message}. Asegúrate de que la API Key sea correcta y tenga la Places API habilitada.
           </div>
         )}
 
         {/* Renderizar el formulario SOLO cuando el script esté cargado y no haya error */}
         {isLoaded && !loadError && (
-           // Pasar la función onSubmit y el estado isSubmitting
            <ReportForm 
              onSubmit={handleReportSubmit} 
              isSubmitting={isSubmittingReport} 
-             submitButtonText="Crear Reporte" // Texto explícito para claridad
+             submitButtonText="Crear Reporte" 
            />
         )}
       </div>
