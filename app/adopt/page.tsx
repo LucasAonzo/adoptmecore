@@ -6,7 +6,7 @@ import { useDebounce } from '@/lib/hooks/useDebounce'; // Importar debounce
 import PetCard from '@/components/PetCard';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
-import { Terminal, Search, Loader2, RotateCcw } from 'lucide-react';
+import { Terminal, Search, Loader2, RotateCcw, ArrowLeft, ArrowRight } from 'lucide-react';
 import { Input } from "@/components/ui/input";
 import {
   Select,
@@ -17,8 +17,51 @@ import {
 } from "@/components/ui/select"; // Importar Select
 import { speciesOptions, genderOptions, sizeOptions } from "@/lib/schemas/petSchema"; // Importar opciones
 import { Button } from "@/components/ui/button"; // Importar Button
-import { Pagination, PaginationContent, PaginationItem, PaginationPrevious, PaginationNext, PaginationEllipsis } from "@/components/ui/pagination"; // Import pagination components
+import { Pagination, PaginationContent, PaginationItem, PaginationPrevious, PaginationNext, PaginationEllipsis, PaginationLink } from "@/components/ui/pagination"; // Import pagination components
 import { cn } from "@/lib/utils"; // Import cn function for conditional classes
+import { useSearchParams } from 'next/navigation'; // Import useSearchParams
+
+// Helper function to generate pagination range with ellipsis
+const generatePaginationRange = (currentPage: number, totalPages: number, siblingCount = 1): (number | '...')[] => {
+  const totalPageNumbers = siblingCount + 5; // siblingCount + firstPage + lastPage + currentPage + 2*ellipsis
+
+  // Case 1: If the number of pages is less than the page numbers we want to show
+  if (totalPages <= totalPageNumbers) {
+    return Array.from({ length: totalPages }, (_, i) => i + 1);
+  }
+
+  const leftSiblingIndex = Math.max(currentPage - siblingCount, 1);
+  const rightSiblingIndex = Math.min(currentPage + siblingCount, totalPages);
+
+  const shouldShowLeftDots = leftSiblingIndex > 2;
+  const shouldShowRightDots = rightSiblingIndex < totalPages - 1;
+
+  const firstPageIndex = 1;
+  const lastPageIndex = totalPages;
+
+  // Case 2: No left dots to show, but right dots to be shown
+  if (!shouldShowLeftDots && shouldShowRightDots) {
+    let leftItemCount = 3 + 2 * siblingCount;
+    let leftRange = Array.from({ length: leftItemCount }, (_, i) => i + 1);
+    return [...leftRange, '...', lastPageIndex];
+  }
+
+  // Case 3: No right dots to show, but left dots to be shown
+  if (shouldShowLeftDots && !shouldShowRightDots) {
+    let rightItemCount = 3 + 2 * siblingCount;
+    let rightRange = Array.from({ length: rightItemCount }, (_, i) => totalPages - rightItemCount + 1 + i);
+    return [firstPageIndex, '...', ...rightRange];
+  }
+
+  // Case 4: Both left and right dots to be shown
+  if (shouldShowLeftDots && shouldShowRightDots) {
+    let middleRange = Array.from({ length: rightSiblingIndex - leftSiblingIndex + 1 }, (_, i) => leftSiblingIndex + i);
+    return [firstPageIndex, '...', ...middleRange, '...', lastPageIndex];
+  }
+
+  // Default case (should not happen with the logic above)
+  return [];
+};
 
 // Renamed from HomePage to AdoptPage
 export default function AdoptPage() {
@@ -32,20 +75,42 @@ export default function AdoptPage() {
 
   const debouncedSearchTerm = useDebounce(searchTerm, 500);
 
-  // Hook usePets now includes page and limit, and returns { data, count }
+  // --- Read query parameters on initial load --- 
+  // Use useSearchParams hook
+  const searchParams = useSearchParams(); 
+  useEffect(() => {
+      const speciesFromUrl = searchParams.get('species');
+      const genderFromUrl = searchParams.get('gender');
+      const breedFromUrl = searchParams.get('breed');
+      const ageFromUrl = searchParams.get('ageCategory');
+      // Apply params from URL to state, only on initial load if they exist
+      if (speciesFromUrl) setSpeciesFilter(speciesFromUrl);
+      if (genderFromUrl) setGenderFilter(genderFromUrl);
+      // TODO: Handle breedFromUrl - maybe set searchTerm or add a separate breed state?
+      // if (breedFromUrl) setSearchTerm(breedFromUrl); // Example: Set search term
+      if (ageFromUrl) setAgeFilter(ageFromUrl); // Set age state
+      // Consider location if needed
+  }, [searchParams]); // Run only when searchParams object changes (initially)
+
+  // Define state for age filter
+  const [ageFilter, setAgeFilter] = useState<string>('all');
+
+  // Hook usePets now includes ageCategory and queryContext
   const { 
-    data: queryResult, // Rename data to queryResult to avoid conflict
+    data: queryResult, 
     isLoading, 
     isFetching, 
     isError, 
     error 
   } = usePets(
+      'adoptPage', // queryContext
       debouncedSearchTerm,
       speciesFilter === 'all' ? undefined : speciesFilter,
       genderFilter === 'all' ? undefined : genderFilter,
       sizeFilter === 'all' ? undefined : sizeFilter,
-      currentPage, // Pass current page
-      limit // Pass limit
+      ageFilter === 'all' ? undefined : ageFilter, 
+      currentPage, 
+      limit 
     );
 
   // Extract pets and count from the query result
@@ -55,8 +120,8 @@ export default function AdoptPage() {
 
   // Determinar si hay algún filtro activo para mostrar el botón de reset
   const isAnyFilterActive = useMemo(() => {
-      return debouncedSearchTerm !== '' || speciesFilter !== 'all' || genderFilter !== 'all' || sizeFilter !== 'all';
-  }, [debouncedSearchTerm, speciesFilter, genderFilter, sizeFilter]);
+      return debouncedSearchTerm !== '' || speciesFilter !== 'all' || genderFilter !== 'all' || sizeFilter !== 'all' || ageFilter !== 'all';
+  }, [debouncedSearchTerm, speciesFilter, genderFilter, sizeFilter, ageFilter]);
 
   // Función para resetear filtros Y VOLVER A PÁGINA 1
   const handleResetFilters = () => {
@@ -64,7 +129,8 @@ export default function AdoptPage() {
       setSpeciesFilter('all');
       setGenderFilter('all');
       setSizeFilter('all');
-      setCurrentPage(1); // Reset page to 1 when filters change
+      setAgeFilter('all'); // Reset age filter
+      setCurrentPage(1); 
   };
 
   // Handlers for pagination
@@ -76,10 +142,19 @@ export default function AdoptPage() {
     setCurrentPage((prev) => Math.max(prev - 1, 1));
   };
 
+  // Handler for clicking specific page numbers
+  const handlePageClick = (pageNumber: number) => {
+    setCurrentPage(pageNumber);
+  };
+
   // Reset page to 1 when filters change (useEffect approach)
   useEffect(() => {
     setCurrentPage(1);
-  }, [debouncedSearchTerm, speciesFilter, genderFilter, sizeFilter]); // Dependencies that affect the total count
+  }, [debouncedSearchTerm, speciesFilter, genderFilter, sizeFilter, ageFilter]); // Dependencies that affect the total count
+
+  const paginationRange = useMemo(() => {
+      return generatePaginationRange(currentPage, totalPages);
+  }, [currentPage, totalPages]);
 
   return (
     // Aplicar fuente body por defecto al contenedor principal
@@ -162,6 +237,24 @@ export default function AdoptPage() {
                         </SelectContent>
                     </Select>
                  </div>
+                 <div className="flex-shrink-0 w-full sm:w-auto">
+                    <label htmlFor="filter-age" className="sr-only">Filtrar por edad</label>
+                    <Select value={ageFilter} onValueChange={setAgeFilter}>
+                        <SelectTrigger id="filter-age" className="w-full sm:w-[140px] h-10 font-body">
+                            <SelectValue placeholder="Edad" />
+                        </SelectTrigger>
+                        <SelectContent>
+                            <SelectItem value="all">Todas</SelectItem>
+                            {/* Use ageCategories defined likely in a shared place or redefine here */}
+                            {/* Assuming ageCategories exists in scope or is imported */} 
+                            {Object.entries(ageCategories).map(([key, { label }]) => (
+                                <SelectItem key={key} value={key}>
+                                    {label}
+                                </SelectItem>
+                            ))}
+                        </SelectContent>
+                    </Select>
+                 </div>
             </div>
 
             {/* Botón Reset: variant="outline" usa colores del tema */}
@@ -224,39 +317,81 @@ export default function AdoptPage() {
         </div>
       )}
 
-      {/* Controles de Paginación: Componentes Shadcn usan colores/fuentes theme */}
+      {/* Controles de Paginación: Estilo actualizado */} 
       {totalPages > 1 && (
           <div className="flex justify-center items-center pt-8">
-              <Pagination>
-                <PaginationContent>
-                  <PaginationItem>
-                    <PaginationPrevious 
-                      size="icon"
-                      href="#"
-                      onClick={(e: React.MouseEvent) => { e.preventDefault(); handlePrevPage(); }} 
-                      aria-disabled={currentPage <= 1}
-                      className={cn(currentPage <= 1 && "pointer-events-none opacity-50")}
-                    />
-                  </PaginationItem>
-                  <PaginationItem>
-                      {/* Aplicar fuente body */}
-                      <span className="px-4 py-2 text-sm font-body font-medium">
-                          Página {currentPage} de {totalPages}
-                      </span>
-                  </PaginationItem>
-                  <PaginationItem>
-                    <PaginationNext 
-                      size="icon"
-                      href="#"
-                      onClick={(e: React.MouseEvent) => { e.preventDefault(); handleNextPage(); }}
-                      aria-disabled={currentPage >= totalPages}
-                      className={cn(currentPage >= totalPages && "pointer-events-none opacity-50")}
-                    />
-                  </PaginationItem>
-                </PaginationContent>
-              </Pagination>
+              <div className="bg-card rounded-full p-1 flex items-center shadow-sm border">
+                <Pagination>
+                  <PaginationContent className="gap-1">
+                    <PaginationItem>
+                      <PaginationPrevious
+                        size="icon"
+                        href="#"
+                        onClick={(e: React.MouseEvent) => { e.preventDefault(); handlePrevPage(); }}
+                        aria-disabled={currentPage <= 1}
+                        className={cn(
+                          "rounded-full bg-primary text-primary-foreground hover:bg-primary/90",
+                          currentPage <= 1 && "pointer-events-none opacity-50"
+                        )}
+                      >
+                        {/* Asegurar que SOLO esté el icono y el span sr-only */}
+                        <ArrowLeft className="h-4 w-4" /> 
+                        <span className="sr-only">Anterior</span>
+                      </PaginationPrevious>
+                    </PaginationItem>
+
+                    {/* Números de página y elipsis */}
+                    {paginationRange.map((page, index) => {
+                      const key = `${page}-${index}`;
+                      if (page === '...') {
+                        return <PaginationItem key={key}><PaginationEllipsis /></PaginationItem>;
+                      }
+                      return (
+                        <PaginationItem key={key}>
+                          <PaginationLink
+                            href="#"
+                            size="icon"
+                            isActive={page === currentPage}
+                            onClick={(e) => { e.preventDefault(); handlePageClick(page); }}
+                            className={cn(
+                              "rounded-full",
+                              page === currentPage && "font-bold bg-primary/10 text-primary"
+                            )}
+                          >
+                            {page}
+                          </PaginationLink>
+                        </PaginationItem>
+                      );
+                    })}
+                    <PaginationItem>
+                      <PaginationNext
+                        size="icon"
+                        href="#"
+                        onClick={(e: React.MouseEvent) => { e.preventDefault(); handleNextPage(); }}
+                        aria-disabled={currentPage >= totalPages}
+                        className={cn(
+                          "rounded-full bg-primary text-primary-foreground hover:bg-primary/90",
+                          currentPage >= totalPages && "pointer-events-none opacity-50"
+                        )}
+                      >
+                        {/* Asegurar que SOLO esté el icono y el span sr-only */}
+                        <ArrowRight className="h-4 w-4" />
+                        <span className="sr-only">Siguiente</span>
+                      </PaginationNext>
+                    </PaginationItem>
+                  </PaginationContent>
+                </Pagination>
+              </div>
           </div>
       )}
     </div>
   );
-} 
+}
+
+// Define age categories here or import from a shared location
+const ageCategories = {
+  puppy: { label: "Puppy (0-1 year)" },
+  young: { label: "Young (1-3 years)" },
+  adult: { label: "Adult (3-7 years)" },
+  senior: { label: "Senior (7+ years)" },
+}; 

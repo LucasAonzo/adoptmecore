@@ -28,12 +28,24 @@ export interface Pet {
 }
 
 /**
+ * Defines the age ranges for filtering.
+ */
+const ageFilterRanges = {
+  puppy: { min: 0, max: 0 }, // age_years = 0
+  young: { min: 1, max: 2 }, // age_years >= 1 AND age_years <= 2 (equivalent to < 3)
+  adult: { min: 3, max: 6 }, // age_years >= 3 AND age_years <= 6 (equivalent to < 7)
+  senior: { min: 7, max: null }, // age_years >= 7
+};
+type AgeCategory = keyof typeof ageFilterRanges;
+
+/**
  * Obtiene las mascotas, opcionalmente filtradas por búsqueda y otros criterios.
  * @param supabase - Instancia del cliente Supabase.
  * @param searchTerm - Término opcional para buscar.
  * @param species - Especie opcional para filtrar.
  * @param gender - Género opcional para filtrar.
  * @param size - Tamaño opcional para filtrar.
+ * @param ageCategory - Categoría de edad opcional para filtrar ('puppy', 'young', 'adult', 'senior').
  * @param page - Número de página para paginación.
  * @param limit - Número de elementos por página.
  */
@@ -43,11 +55,11 @@ export async function getPets(
     species?: string,
     gender?: string,
     size?: string,
-    page: number = 1, // Default to page 1
-    limit: number = 12 // Default limit
-): Promise<{ data: Pet[], count: number | null }> { // <-- Update return type
+    ageCategory?: string,
+    page: number = 1, 
+    limit: number = 12 
+): Promise<{ data: Pet[], count: number | null }> { 
 
-  // Asegurarse que page y limit son números válidos
   const pageNum = Math.max(1, page);
   const limitNum = Math.max(1, limit);
   const rangeFrom = (pageNum - 1) * limitNum;
@@ -58,19 +70,16 @@ export async function getPets(
     .select(`
       *,
       pet_images ( image_url )
-    `, { count: 'exact' }) // <-- Request total count
-    .eq('pet_images.is_primary', true)
-    .limit(1, { foreignTable: 'pet_images' });
+    `, { count: 'exact' });
 
-  // Aplicar filtro de búsqueda si se proporciona
+  // Apply search filter
   if (searchTerm && searchTerm.trim() !== '') {
     const cleanedSearchTerm = searchTerm.trim();
     console.log('Applying search filter: ', cleanedSearchTerm);
     query = query.or(`name.ilike.%${cleanedSearchTerm}%,description.ilike.%${cleanedSearchTerm}%,breed.ilike.%${cleanedSearchTerm}%`);
-    // Considerar alternativa con COALESCE si hay problemas con NULLs
   }
 
-  // Aplicar filtros exactos si se proporcionan
+  // Apply exact filters
   if (species && species !== '') {
       console.log('Applying species filter: ', species);
       query = query.eq('species', species);
@@ -84,16 +93,33 @@ export async function getPets(
       query = query.eq('size', size);
   }
 
-  query = query.order('created_at', { ascending: false });
+  // Apply age filter based on age_years
+  if (ageCategory && ageFilterRanges[ageCategory as AgeCategory]) {
+      console.log('Applying age filter: ', ageCategory);
+      const range = ageFilterRanges[ageCategory as AgeCategory];
+      
+      if (ageCategory === 'puppy') {
+        query = query.eq('age_years', 0);
+      } else {
+        if (range.min !== null) {
+            query = query.gte('age_years', range.min);
+        }
+        if (range.max !== null) {
+            query = query.lte('age_years', range.max); 
+        }
+      }
+  } else if (ageCategory) {
+      console.warn('Invalid ageCategory provided:', ageCategory);
+  }
 
-  // Apply pagination range
+  query = query.order('created_at', { ascending: false });
   query = query.range(rangeFrom, rangeTo);
 
   console.log(`Executing query with pagination: page=${pageNum}, limit=${limitNum}, range=(${rangeFrom}-${rangeTo})`);
-  const { data, error, count } = await query; // <-- Get count from response
+  const { data, error, count } = await query;
 
    if (error) {
-    console.error("Error fetching pets:", error);
+    console.error("Error fetching pets:", JSON.stringify(error, null, 2)); 
     throw new Error(error.message || JSON.stringify(error));
   }
 
@@ -107,7 +133,6 @@ export async function getPets(
        } as Pet;
    }) ?? [];
    
-  // Return data and count
   return { data: petsWithImages, count }; 
 }
 

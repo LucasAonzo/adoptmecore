@@ -119,169 +119,155 @@ export function ReportCard({ report, onSave, onShare, isSaved = false }: ReportC
   };
 
   return (
-    // Card structure from example, merging original classes like font-body, bg-card
     <Card
       className={cn(
-        "group h-full flex flex-col overflow-hidden transition-all duration-300 font-body", // Added font-body from original
-        "border hover:shadow-md hover:-translate-y-1 bg-card", // Added bg-card from original
-        isEmergency && "border-destructive/70 shadow-[0_0_0_1px_rgba(239,68,68,0.2)]" // Emergency style from example (same as original)
+        "group h-full flex flex-col overflow-hidden transition-all duration-300 font-body",
+        "border hover:shadow-md hover:-translate-y-1 bg-card",
+        isEmergency && "border-destructive/70 shadow-[0_0_0_1px_rgba(239,68,68,0.2)]"
       )}
     >
-      {/* Image Section with Overlay Elements (structure from example, logic/content original) */}
-      <div className="relative">
-        {/* Emergency Banner (structure from example, logic/content original) */}
-        {isEmergency && (
-          <div className="absolute top-0 left-0 right-0 z-10 bg-destructive py-1.5 px-3 backdrop-blur-sm">
-            <p className="text-xs font-medium text-white flex items-center justify-center font-body"> {/* Added font-body */}
-              <ReportIcon className="h-3.5 w-3.5 mr-1.5 flex-shrink-0" /> {/* Added flex-shrink-0 */}
-              Requiere Atención Urgente
-            </p>
-          </div>
-        )}
-
-        {/* Image (structure from example, logic/content original) */}
-        <div className="relative w-full aspect-[3/2] bg-muted overflow-hidden">
-          {report.image_url ? (
-            <Image
-              src={report.image_url} // Use original URL
-              alt={`Imagen de ${report.pet_name || report.pet_type}`}
-              fill
-              sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-              className="object-cover transition-transform duration-500 group-hover:scale-105"
-              priority={isEmergency}
-              onError={(e) => { e.currentTarget.src = placeholderImage }} // Keep original onError and placeholder
-            />
-          ) : (
-            // Placeholder (structure from example)
-            <div className="flex items-center justify-center h-full bg-gradient-to-br from-muted/80 to-muted">
-              <div className="text-center p-4">
-                <ReportIcon className="h-8 w-8 mx-auto mb-2 text-muted-foreground/70" />
-                <span className="text-sm text-muted-foreground">Sin imagen disponible</span>
-              </div>
+      <Link href={`/report/${report.id}`} passHref className="flex flex-col flex-grow h-full">
+        <div className="relative">
+          {isEmergency && (
+            <div className="absolute top-0 left-0 right-0 z-10 bg-destructive py-1.5 px-3 backdrop-blur-sm">
+              <p className="text-xs font-medium text-white flex items-center justify-center font-body">
+                <ReportIcon className="h-3.5 w-3.5 mr-1.5 flex-shrink-0" />
+                Requiere Atención Urgente
+              </p>
             </div>
           )}
 
-          {/* Action Buttons (structure from example, logic/content original) */}
-          <div className="absolute top-2 right-2 flex gap-1.5 z-10">
-            <TooltipProvider>
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <Button
-                    size="icon"
-                    variant="ghost"
-                    className={cn(
-                      "h-8 w-8 rounded-full bg-background/80 backdrop-blur-sm hover:bg-background/90",
-                      saved ? "text-primary" : "text-muted-foreground", // Original color logic
-                    )}
-                    onClick={handleSave}
-                    aria-label="Guardar reporte" // Original aria-label
-                  >
-                    <BookmarkPlus className={cn("h-4 w-4", saved && "fill-current")} />
-                    <span className="sr-only">Guardar</span>
-                  </Button>
-                </TooltipTrigger>
-                <TooltipContent>
-                  <p>{saved ? "Guardado" : "Guardar reporte"}</p>
-                </TooltipContent>
-              </Tooltip>
-            </TooltipProvider>
-
-            <TooltipProvider>
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <Button
-                    size="icon"
-                    variant="ghost"
-                    className="h-8 w-8 rounded-full bg-background/80 backdrop-blur-sm hover:bg-background/90 text-muted-foreground"
-                    onClick={handleShare}
-                    aria-label="Compartir reporte" // Original aria-label
-                  >
-                    <Share2 className="h-4 w-4" />
-                    <span className="sr-only">Compartir</span>
-                  </Button>
-                </TooltipTrigger>
-                <TooltipContent>
-                  <p>Compartir reporte</p>
-                </TooltipContent>
-              </Tooltip>
-            </TooltipProvider>
-          </div>
-
-          {/* Report Type Badge (structure from example, logic/content original) */}
-          {!isEmergency && (
-            <div className="absolute bottom-0 left-0 p-2 z-10">
-              <Badge variant={badgeVariant} className="capitalize font-body font-medium text-xs shadow-sm flex items-center rounded-full"> {/* Added font-body, flex items-center, ADDED rounded-full */}
-                <ReportIcon className="mr-1 h-3.5 w-3.5 flex-shrink-0" /> {/* Added flex-shrink-0 */}
-                {label}
-              </Badge>
-            </div>
-          )}
-        </div>
-      </div>
-
-      {/* Content Section (structure from example, logic/content original) */}
-      <Link href={`/report/${report.id}`} passHref className="flex flex-col flex-grow">
-          <CardHeader className="p-4 pb-2">
-            <div className="flex items-start justify-between gap-2">
-              {/* Title and Subtitle (structure from example, logic/content original) */}
-              <div className="space-y-1 flex-grow min-w-0"> {/* Keep original flex-grow min-w-0 */}
-                <h3 className="text-lg font-heading font-semibold line-clamp-1 group-hover:text-primary transition-colors"> {/* Keep original font-heading */}
-                  {report.pet_name || report.pet_type || "Reporte"} {/* Original fallback "Reporte" */}
-                </h3>
-                {/* Original subtitle logic */}
-                <p className="text-sm text-muted-foreground capitalize line-clamp-1 font-body"> {/* Keep original font-body */}
-                  {(report.pet_name && report.pet_type !== report.pet_name) ? report.pet_type : ''}
-                  {report.pet_breed ? `${(report.pet_name && report.pet_type !== report.pet_name) ? ' - ' : ''}${report.pet_breed}` : ''}
-                  {!(report.pet_type || report.pet_breed) ? 'Detalles no especificados' : ''}
-                </p>
+          <div className="relative w-full aspect-[3/2] bg-muted overflow-hidden">
+            {report.image_url ? (
+              <Image
+                src={report.image_url}
+                alt={`Imagen de ${report.pet_name || report.pet_type}`}
+                fill
+                sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                className="object-cover transition-transform duration-500 group-hover:scale-105"
+                priority={isEmergency}
+                onError={(e) => { e.currentTarget.src = placeholderImage }}
+              />
+            ) : (
+              <div className="flex items-center justify-center h-full bg-gradient-to-br from-muted/80 to-muted">
+                <div className="text-center p-4">
+                  <ReportIcon className="h-8 w-8 mx-auto mb-2 text-muted-foreground/70" />
+                  <span className="text-sm text-muted-foreground">Sin imagen disponible</span>
+                </div>
               </div>
+            )}
 
-              {/* Status Badge (structure from example, logic/content original) */}
-              {report.status && (
-                <Badge variant="outline" className={cn("text-xs font-medium flex-shrink-0 ml-2 rounded-full", statusConfig.color)}> {/* Keep original flex-shrink-0 ml-2, ADDED rounded-full */}
-                  {statusConfig.text}
+            <div className="absolute top-2 right-2 flex gap-1.5 z-10">
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button
+                      size="icon"
+                      variant="ghost"
+                      className={cn(
+                        "h-8 w-8 rounded-full bg-background/80 backdrop-blur-sm hover:bg-background/90",
+                        saved ? "text-primary" : "text-muted-foreground",
+                      )}
+                      onClick={handleSave}
+                      aria-label="Guardar reporte"
+                    >
+                      <BookmarkPlus className={cn("h-4 w-4", saved && "fill-current")} />
+                      <span className="sr-only">Guardar</span>
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <p>{saved ? "Guardado" : "Guardar reporte"}</p>
+                  </TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
+
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button
+                      size="icon"
+                      variant="ghost"
+                      className="h-8 w-8 rounded-full bg-background/80 backdrop-blur-sm hover:bg-background/90 text-muted-foreground"
+                      onClick={handleShare}
+                      aria-label="Compartir reporte"
+                    >
+                      <Share2 className="h-4 w-4" />
+                      <span className="sr-only">Compartir</span>
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <p>Compartir reporte</p>
+                  </TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
+            </div>
+
+            {!isEmergency && (
+              <div className="absolute bottom-0 left-0 p-2 z-10">
+                <Badge variant={badgeVariant} className="capitalize font-body font-medium text-xs shadow-sm flex items-center rounded-full">
+                  <ReportIcon className="mr-1 h-3.5 w-3.5 flex-shrink-0" />
+                  {label}
                 </Badge>
-              )}
+              </div>
+            )}
+          </div>
+        </div>
+
+        <CardHeader className="p-4 pb-2">
+          <div className="flex items-start justify-between gap-2">
+            <div className="space-y-1 flex-grow min-w-0">
+              <h3 className="text-lg font-heading font-semibold line-clamp-1 group-hover:text-primary transition-colors">
+                {report.pet_name || report.pet_type || "Reporte"}
+              </h3>
+              <p className="text-sm text-muted-foreground capitalize line-clamp-1 font-body">
+                {(report.pet_name && report.pet_type !== report.pet_name) ? report.pet_type : ''}
+                {report.pet_breed ? `${(report.pet_name && report.pet_type !== report.pet_name) ? ' - ' : ''}${report.pet_breed}` : ''}
+                {!(report.pet_type || report.pet_breed) ? 'Detalles no especificados' : ''}
+              </p>
             </div>
-          </CardHeader>
 
-          <CardContent className="px-4 py-2 flex-grow">
-             {/* Description (structure from example, logic/content original) */}
-            <p className="text-sm text-foreground/90 line-clamp-2 mb-3 font-body"> {/* Keep original font-body */}
-              {report.description || "Sin descripción disponible."} {/* Original fallback text */}
-            </p>
+            {report.status && (
+              <Badge variant="outline" className={cn("text-xs font-medium flex-shrink-0 ml-2 rounded-full", statusConfig.color)}>
+                {statusConfig.text}
+              </Badge>
+            )}
+          </div>
+        </CardHeader>
 
-            {/* Additional Details (structure from example, logic/content original) */}
-            <div className="space-y-2 text-xs text-muted-foreground font-body"> {/* Keep original font-body */}
-              {(report.location_description || resolvedLocation) && ( // Show if original description OR resolved location exists
-                <div className="flex items-start gap-2"> {/* Keep original items-start */}
-                  <MapPin className="w-3.5 h-3.5 flex-shrink-0 text-primary/70 mt-0.5" /> {/* Keep original mt-0.5 */}
-                  {/* Display original description first, fallback to resolved location */}
-                  <span className="line-clamp-2">{report.location_description || resolvedLocation}</span>
-                </div>
-              )}
+        <CardContent className="px-4 py-2 flex-grow">
+          <p className="text-sm text-foreground/90 line-clamp-2 mb-3 font-body">
+            {report.description || "Sin descripción disponible."}
+          </p>
 
-              {/* Time elapsed (original logic) */}
-              {mounted && timeAgo && (
-                <div className="flex items-center gap-2">
-                  <Clock className="w-3.5 h-3.5 flex-shrink-0 text-primary/70" /> {/* Keep original flex-shrink-0 */}
-                  <span>{`Reportado ${timeAgo}`}</span>
-                </div>
-              )}
-            </div>
-          </CardContent>
+          <div className="space-y-2 text-xs text-muted-foreground font-body">
+            {(report.location_description || resolvedLocation) && (
+              <div className="flex items-start gap-2">
+                <MapPin className="w-3.5 h-3.5 flex-shrink-0 text-primary/70 mt-0.5" />
+                <span className="line-clamp-2">{report.location_description || resolvedLocation}</span>
+              </div>
+            )}
 
-          <CardFooter className="px-4 py-3 border-t border-border/40 mt-auto">
-            {/* View Details Button (structure from example, original classes) */}
-            <Button
-              variant="ghost"
-              size="sm"
-              className="ml-auto text-xs font-body font-medium group-hover:text-primary transition-colors h-auto py-1 px-2" /* Original classes */
-            >
-              Ver detalles
-              <ChevronRight className="ml-1 h-3.5 w-3.5" />
-            </Button>
-          </CardFooter>
+            {mounted && timeAgo && (
+              <div className="flex items-center gap-2">
+                <Clock className="w-3.5 h-3.5 flex-shrink-0 text-primary/70" />
+                <span>{`Reportado ${timeAgo}`}</span>
+              </div>
+            )}
+          </div>
+        </CardContent>
+
+        <CardFooter className="px-4 py-3 border-t border-border/40 mt-auto">
+          <Button
+            variant="ghost"
+            size="sm"
+            className="ml-auto text-xs font-body font-medium group-hover:text-primary transition-colors h-auto py-1 px-2"
+            tabIndex={-1}
+            aria-hidden="true"
+          >
+            Ver detalles
+            <ChevronRight className="ml-1 h-3.5 w-3.5" />
+          </Button>
+        </CardFooter>
       </Link>
     </Card>
   );

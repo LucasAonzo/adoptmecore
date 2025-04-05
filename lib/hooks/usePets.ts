@@ -11,43 +11,48 @@ interface PetFilters {
     species?: string;
     gender?: string;
     size?: string;
+    ageCategory?: string;
     page?: number;
     limit?: number;
 }
 
 /**
  * Hook para obtener la lista paginada de mascotas, con soporte para búsqueda y filtros.
+ * @param queryContext - Identificador único para el contexto de la consulta (e.g., 'homepage', 'adoptPage').
  * @param searchTerm - Término de búsqueda opcional.
  * @param species - Filtro de especie opcional.
  * @param gender - Filtro de género opcional.
  * @param size - Filtro de tamaño opcional.
+ * @param ageCategory - Filtro de categoría de edad opcional.
  * @param page - Número de página opcional.
  * @param limit - Número de elementos por página opcional.
  */
 export function usePets(
+    queryContext: string,
     searchTerm?: string,
     species?: string,
     gender?: string,
     size?: string,
+    ageCategory?: string,
     page: number = 1,
     limit: number = 12
 ) {
   const { supabase, isLoading: isLoadingAuth } = useAuth();
 
-  // Crear objeto de filtros para la queryKey (incluir page y limit)
+  // Crear objeto de filtros para la queryKey
   const filters: PetFilters = { page, limit };
   if (searchTerm) filters.search = searchTerm;
   if (species) filters.species = species;
   if (gender) filters.gender = gender;
   if (size) filters.size = size;
+  if (ageCategory) filters.ageCategory = ageCategory;
 
-  // La query key ahora incluye el objeto de filtros completo
-  const queryKey = [PETS_QUERY_KEY, filters];
+  // La query key ahora incluye el contexto y el objeto de filtros
+  const queryKey = [PETS_QUERY_KEY, queryContext, filters];
 
   return useQuery({
     queryKey: queryKey,
-    // Pasar todos los filtros, page y limit a la función de servicio
-    queryFn: () => getPets(supabase, searchTerm, species, gender, size, page, limit),
+    queryFn: () => getPets(supabase, searchTerm, species, gender, size, ageCategory, page, limit),
     enabled: !isLoadingAuth,
     // Consider adjusting staleTime if frequent page changes are expected
     staleTime: 1000 * 60 * 2,

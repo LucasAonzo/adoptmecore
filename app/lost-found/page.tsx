@@ -53,13 +53,13 @@ export default function LostFoundPage() {
                 setUserLocation(newUserLocation);
                 setLocationStatus('success');
             },
-            (error) => {
-                console.error("[LostFoundPage] Error obteniendo ubicación:", error);
+            (error: GeolocationPositionError) => {
+                console.error(`[LostFoundPage] Error obteniendo ubicación (Code: ${error.code}): ${error.message}`);
                 setLocationStatus('error');
             },
-            { enableHighAccuracy: false, timeout: 8000, maximumAge: 1000 * 60 * 5 } // Opciones menos agresivas
+            { enableHighAccuracy: false, timeout: 8000, maximumAge: 1000 * 60 * 5 }
         );
-    }, []); // Ejecutar solo al montar
+    }, []);
     // --- Fin obtención ubicación ---
 
     // Hook useReports ahora recibe los filtros activos Y los bounds
@@ -193,7 +193,13 @@ export default function LostFoundPage() {
                     ) : (
                         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 mb-8">
                             {allReports.map((report) => (
-                                <ReportCard key={report.id} report={report} />
+                                <ReportCard key={report.id} report={{ 
+                                    ...report, 
+                                    image_url: report.image_url ?? null,
+                                    location_description: report.location_description ?? null, 
+                                    pet_breed: report.pet_breed ?? null,
+                                    pet_name: report.pet_name ?? null
+                                }} />
                             ))}
                         </div>
                     )}

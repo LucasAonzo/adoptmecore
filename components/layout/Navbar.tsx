@@ -42,7 +42,7 @@ export default function Navbar() {
     const { user, session, isLoading, supabase, hasGloballyUnread } = useAuth();
     const [isSheetOpen, setIsSheetOpen] = useState(false);
     const pathname = usePathname();
-    console.log("[Navbar] AuthContext -> hasGloballyUnread:", hasGloballyUnread);
+    
 
     const handleLogout = async () => {
         setIsSheetOpen(false); // Cerrar sheet si está abierto
@@ -59,7 +59,7 @@ export default function Navbar() {
         <header className="sticky top-0 z-50 w-full border-b border-border bg-primary py-2">
             <div className="container flex h-14 items-center justify-between px-6 md:px-8">
                 {/* Logo */} 
-                 <Link href="/" className="flex items-center gap-2 font-heading font-bold text-primary-foreground mr-8 flex-shrink-0">
+                 <Link href="/" className="flex items-center gap-2 font-heading font-bold text-primary-foreground mr-2 flex-shrink-0">
                     <PawPrint className="h-6 w-6" />
                     <span className="hidden sm:inline-block">AdoptMe Tuc</span>
                 </Link>
@@ -71,7 +71,7 @@ export default function Navbar() {
                             key={link.href}
                             href={link.href}
                             className={cn(
-                                "text-xs font-medium transition-colors",
+                                "text-sm font-semibold transition-colors",
                                 pathname === link.href
                                     ? "text-primary-foreground bg-primary-600 px-3 py-1 rounded-full hover:text-primary-foreground/80"
                                     : "text-primary-200 hover:text-primary-foreground"
@@ -220,7 +220,7 @@ export default function Navbar() {
                                         <Link
                                             href={link.href}
                                             className={cn(
-                                                "block text-lg font-medium transition-colors",
+                                                "block text-lg font-semibold transition-colors",
                                                 pathname === link.href
                                                     ? "text-primary-foreground bg-primary-foreground/10 px-3 py-1 rounded-full hover:text-primary-foreground/80"
                                                     : "text-primary-200 hover:text-primary-foreground"
@@ -238,7 +238,7 @@ export default function Navbar() {
                                             <Link
                                                 href="/my-chats"
                                                 className={cn(
-                                                    "relative flex items-center text-lg font-medium transition-colors",
+                                                    "relative flex items-center text-lg font-semibold transition-colors",
                                                     pathname === '/my-chats'
                                                         ? "text-primary-foreground bg-primary-foreground/10 px-3 py-1 rounded-full hover:text-primary-foreground/80"
                                                         : "text-primary-200 hover:text-primary-foreground"
@@ -255,14 +255,14 @@ export default function Navbar() {
                                             </Link>
                                         </SheetClose>
                                         <SheetClose asChild>
-                                            <Link href="/profile/edit" className="flex items-center text-lg font-medium text-primary-200 transition-colors hover:text-primary-foreground">
+                                            <Link href="/profile/edit" className="flex items-center text-lg font-semibold text-primary-200 transition-colors hover:text-primary-foreground">
                                                 <UserCircle className="mr-3 h-5 w-5" />
                                                 Editar Perfil
                                             </Link>
                                         </SheetClose>
                                         {userMenuLinks.map((link) => (
                                             <SheetClose asChild key={link.href}>
-                                                <Link href={link.href} className="flex items-center text-lg font-medium text-primary-200 transition-colors hover:text-primary-foreground">
+                                                <Link href={link.href} className="flex items-center text-lg font-semibold text-primary-200 transition-colors hover:text-primary-foreground">
                                                     <link.icon className="mr-3 h-5 w-5" />
                                                     {link.label}
                                                 </Link>
@@ -275,12 +275,12 @@ export default function Navbar() {
                                 {!isLoading && !user && (
                                     <div className="border-t border-primary-foreground/20 pt-6 mt-6 space-y-4">
                                         <SheetClose asChild>
-                                            <Button variant="secondary" asChild className="w-full text-lg font-body">
+                                            <Button variant="secondary" asChild className="w-full text-lg font-semibold font-body">
                                                 <Link href="/login">Login</Link>
                                             </Button>
                                         </SheetClose>
                                         <SheetClose asChild>
-                                            <Button variant="secondary" asChild className="w-full text-lg font-body">
+                                            <Button variant="secondary" asChild className="w-full text-lg font-semibold font-body">
                                                 <Link href="/signup">Sign Up</Link>
                                             </Button>
                                         </SheetClose>
@@ -292,7 +292,7 @@ export default function Navbar() {
                             {user && (
                                 <div className="mt-auto border-t border-primary-foreground/20 pt-6">
                                     <SheetClose asChild>
-                                        <Button variant="ghost" onClick={handleLogout} className="w-full justify-start text-lg font-medium text-primary-200 transition-colors hover:text-primary-foreground hover:bg-transparent">
+                                        <Button variant="ghost" onClick={handleLogout} className="w-full justify-start text-lg font-semibold text-primary-200 transition-colors hover:text-primary-foreground hover:bg-transparent">
                                             <LogOut className="mr-3 h-5 w-5" />
                                             Logout
                                         </Button>
